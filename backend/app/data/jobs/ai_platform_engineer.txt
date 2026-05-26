@@ -1,0 +1,34 @@
+Job Title: AI Platform Engineer
+Company: HorizonAI Systems
+Location: San Francisco, CA (Hybrid)
+Experience Level: Entry to Mid
+Employment Type: Full-Time
+Salary Range: $110,000 - $160,000/year
+
+About HorizonAI Systems:
+HorizonAI Systems builds the foundational AI platform that powers our suite of enterprise AI products. Our platform team ensures AI engineers can build, deploy, and monitor AI features without re-inventing infrastructure.
+
+Role Summary:
+Join our AI Platform team to build the foundational systems that AI engineers at HorizonAI depend on. You will work on embedding pipelines, vector databases, model serving, and the internal developer experience for AI teams.
+
+Responsibilities:
+- Build and maintain the internal AI platform: embedding services, vector DB management, LLM gateways
+- Design scalable ingestion pipelines for multi-modal data (text, PDF, images)
+- Build developer tooling: SDKs, CLI tools, and internal APIs for AI teams
+- Implement semantic caching layers to reduce LLM costs
+- Own the ChromaDB → Pinecone migration for production scale
+- Build evaluation frameworks for retrieval quality and LLM accuracy
+- Collaborate with product AI teams to understand platform needs
+- Contribute to open-source AI infrastructure tools
+
+Requirements:
+- 1-3 years of software engineering experience
+- Strong Python and FastAPI skills
+- Experience with vector databases (ChromaDB, Pinecone, Weaviate, Qdrant)
+- Understanding of embedding models and semantic search
+- Experience with LangChain or LlamaIndex
+- Proficiency with Docker and basic Kubernetes
+- Strong system design skills
+- Excellent communication and documentation habits
+
+Skills: Python, FastAPI, ChromaDB, Pinecone, Weaviate, Qdrant, LangChain, embeddings, Docker, Kubernetes, semantic search, RAG, REST API, system design

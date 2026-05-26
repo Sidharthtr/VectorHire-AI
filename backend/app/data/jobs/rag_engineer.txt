@@ -1,0 +1,40 @@
+Job Title: RAG Engineer
+Company: Cognify AI
+Location: Remote (Global)
+Experience Level: Entry to Mid
+Employment Type: Full-Time
+Salary Range: $85,000 - $120,000/year
+
+About Cognify AI:
+Cognify AI is a Series B startup building next-generation document intelligence products using Retrieval-Augmented Generation (RAG). Our customers include legal firms, research institutions, and healthcare providers who need precise, grounded AI answers from their private document corpora.
+
+Role Summary:
+We are hiring a RAG Engineer to design, build, and optimize our core retrieval pipeline. You will own the full lifecycle from document ingestion to semantic retrieval and LLM-grounded generation.
+
+Responsibilities:
+- Design and implement RAG pipelines using LangChain and LlamaIndex
+- Build document ingestion systems: chunking strategies, metadata extraction, embedding pipelines
+- Optimize ChromaDB and Pinecone collections for production-scale retrieval
+- Implement hybrid retrieval (dense + sparse/BM25) for improved recall
+- Evaluate retrieval quality using metrics (MRR, NDCG, recall@k)
+- Build reranking layers using cross-encoder models
+- Integrate Gemini, Claude, and OpenAI models through a unified LLM gateway
+- Monitor retrieval pipelines in production using LangSmith
+
+Requirements:
+- 1-3 years experience in backend engineering or AI/ML engineering
+- Strong Python skills
+- Deep understanding of RAG architecture and tradeoffs
+- Hands-on experience with LangChain or LlamaIndex
+- Experience with at least one vector DB: ChromaDB, Pinecone, Weaviate, or Qdrant
+- Familiarity with embedding models (sentence-transformers, OpenAI embeddings)
+- Understanding of chunking strategies and their impact on retrieval quality
+- Experience with LLM APIs (OpenAI, Gemini, Anthropic)
+
+Nice to Have:
+- Experience with reranking models (Cohere, cross-encoders)
+- Production experience with vector databases at scale
+- LangSmith or other LLM observability tools
+- Knowledge of RLHF, fine-tuning workflows
+
+Skills: Python, LangChain, LlamaIndex, RAG, ChromaDB, Pinecone, Weaviate, sentence-transformers, embeddings, Gemini, OpenAI, LangSmith, FastAPI, vector search, reranking

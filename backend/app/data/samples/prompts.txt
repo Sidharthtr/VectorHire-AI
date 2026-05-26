@@ -1,0 +1,22 @@
+# VectorHire AI — Sample LLM Prompts Reference
+# These are the prompt templates used in the system
+
+## Skill Extraction Prompt
+Used in: app/llm/prompts.py → EXTRACT_SKILLS_PROMPT
+Purpose: Parse resume text into structured JSON with skills, education, experience
+
+## Job Ranking Prompt
+Used in: app/llm/prompts.py → RANK_JOBS_PROMPT
+Purpose: Evaluate candidate fit for a specific job, output matched/missing skills and fit score
+
+## Explanation Prompt
+Used in: app/llm/prompts.py → EXPLAIN_MATCH_PROMPT
+Purpose: Generate human-readable explanation of why a job matches the candidate
+
+## Improvement Suggestions Prompt
+Used in: app/llm/prompts.py → IMPROVEMENT_SUGGESTIONS_PROMPT
+Purpose: Generate 5 specific learning recommendations based on skill gaps
+
+## Overall Summary Prompt
+Used in: app/llm/prompts.py → OVERALL_SUMMARY_PROMPT
+Purpose: Generate an overall assessment of the candidate's job market readiness

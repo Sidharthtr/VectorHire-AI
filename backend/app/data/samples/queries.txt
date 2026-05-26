@@ -1,0 +1,30 @@
+# VectorHire AI — Sample Search Queries
+# Use these to test the semantic search and analysis pipeline
+
+# Internship queries
+Looking for AI backend internships using FastAPI and LangGraph
+Python AI intern with LangChain and ChromaDB experience
+Remote internship for NLP and transformer models
+Generative AI intern roles using Gemini or OpenAI APIs
+Machine learning intern position with PyTorch
+
+# Entry-level full-time queries
+Remote RAG engineering roles for recent graduates
+Entry-level LLMOps engineer positions
+AI platform engineer jobs for junior engineers
+Backend engineer roles building LLM products
+Full-stack AI developer position with React and FastAPI
+
+# Skill-specific queries
+Jobs requiring LangGraph and agentic AI experience
+Vector database engineer roles with ChromaDB or Pinecone
+Embedding pipeline engineer positions
+Prompt engineering roles at AI startups
+Knowledge graph and RAG engineer positions
+
+# Career goal queries
+I want to build AI agents and autonomous workflows
+Looking for a role where I can work on production RAG systems
+Interested in LLM fine-tuning and model optimization
+Want to build AI infrastructure at an early-stage startup
+Looking for roles combining Python backend and AI/ML

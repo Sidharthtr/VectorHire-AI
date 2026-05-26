@@ -1,0 +1,38 @@
+Job Title: AI Backend Engineering Intern
+Company: NeuralStack Labs
+Location: Remote (US/India)
+Experience Level: Intern
+Employment Type: Internship
+Salary Range: $2,000 - $3,500/month
+
+About NeuralStack Labs:
+NeuralStack Labs builds AI-native infrastructure for enterprise customers. Our products power RAG pipelines, semantic search systems, and LLM-based workflow automation for Fortune 500 companies.
+
+Role Summary:
+We are looking for a motivated AI Backend Engineering Intern to join our platform team. You will help build and maintain backend services that support our LLM inference pipelines and vector search infrastructure.
+
+Responsibilities:
+- Build and maintain FastAPI microservices for LLM inference and data ingestion
+- Integrate with ChromaDB and Pinecone for vector storage and retrieval
+- Write Python scripts for embedding generation using sentence-transformers
+- Help design and implement REST APIs consumed by frontend dashboards
+- Collaborate with the AI research team on prompt engineering and evaluation
+- Write unit tests and integration tests for backend services
+- Document APIs using OpenAPI/Swagger
+
+Requirements:
+- Currently pursuing or recently completed a degree in CS, AI, or related field
+- Proficiency in Python 3.10+
+- Experience with FastAPI or Flask
+- Familiarity with LLM concepts: embeddings, RAG, prompt engineering
+- Basic understanding of vector databases (ChromaDB, Pinecone, FAISS)
+- Git version control proficiency
+- Strong problem-solving skills and ability to learn quickly
+
+Nice to Have:
+- Experience with LangChain or LangGraph
+- Familiarity with Docker
+- Knowledge of sentence-transformers and embedding models
+- Prior internship or project experience with AI/ML
+
+Skills: Python, FastAPI, LangChain, ChromaDB, sentence-transformers, embeddings, REST API, Git, Docker, RAG

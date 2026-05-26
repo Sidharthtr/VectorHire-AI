@@ -1,0 +1,522 @@
+[
+  {
+    "id": "job_001",
+    "title": "AI Backend Engineering Intern",
+    "company": "NeuralStack Labs",
+    "location": "Remote",
+    "experience_level": "intern",
+    "employment_type": "internship",
+    "remote": true,
+    "salary_range": "$2,000-$3,500/month",
+    "skills": ["Python", "FastAPI", "LangChain", "ChromaDB", "sentence-transformers", "embeddings", "REST API", "Git", "Docker", "RAG"],
+    "description": "Build and maintain FastAPI microservices for LLM inference and data ingestion. Integrate ChromaDB for vector storage. Write embedding generation scripts using sentence-transformers. Help design REST APIs consumed by frontend dashboards. Collaborate with AI research team on prompt engineering. Currently pursuing or recently completed a degree in CS or AI.",
+    "responsibilities": [
+      "Build FastAPI microservices for LLM inference pipelines",
+      "Integrate ChromaDB and Pinecone for vector storage",
+      "Write Python scripts for embedding generation",
+      "Design REST APIs for frontend dashboards",
+      "Write unit tests and integration tests"
+    ],
+    "requirements": [
+      "Python 3.10+ proficiency",
+      "Experience with FastAPI or Flask",
+      "Familiarity with LLM concepts and RAG",
+      "Basic vector DB knowledge",
+      "Git version control"
+    ]
+  },
+  {
+    "id": "job_002",
+    "title": "RAG Engineer",
+    "company": "Cognify AI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$85,000-$120,000/year",
+    "skills": ["Python", "LangChain", "LlamaIndex", "RAG", "ChromaDB", "Pinecone", "sentence-transformers", "embeddings", "Gemini", "OpenAI", "LangSmith", "FastAPI", "vector search"],
+    "description": "Design and implement RAG pipelines using LangChain and LlamaIndex. Build document ingestion systems with chunking strategies and embedding pipelines. Optimize ChromaDB and Pinecone for production-scale retrieval. Implement hybrid retrieval combining dense and sparse search. Evaluate retrieval quality using standard metrics.",
+    "responsibilities": [
+      "Design RAG pipelines using LangChain and LlamaIndex",
+      "Build document ingestion and chunking systems",
+      "Optimize vector DB collections for production scale",
+      "Implement hybrid retrieval (dense + sparse/BM25)",
+      "Monitor retrieval pipelines using LangSmith"
+    ],
+    "requirements": [
+      "1-3 years backend or AI/ML engineering experience",
+      "Strong Python skills",
+      "Deep understanding of RAG architecture",
+      "Hands-on experience with LangChain or LlamaIndex",
+      "Experience with vector databases"
+    ]
+  },
+  {
+    "id": "job_003",
+    "title": "LLMOps Engineer",
+    "company": "Orion AI Platform",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$90,000-$130,000/year",
+    "skills": ["Python", "Docker", "Kubernetes", "LLMOps", "MLOps", "LangSmith", "LoRA", "fine-tuning", "vLLM", "AWS", "GCP", "GitHub Actions", "CI/CD", "prompt engineering", "FastAPI"],
+    "description": "Design and manage LLM serving infrastructure using vLLM and TGI. Build prompt management systems with versioning and A/B testing. Implement LLM observability pipelines tracking latency, cost, and quality. Create automated evaluation pipelines using LangSmith. Manage model fine-tuning workflows using LoRA on cloud infrastructure.",
+    "responsibilities": [
+      "Design LLM serving infrastructure with vLLM and TGI",
+      "Build prompt versioning and management systems",
+      "Implement LLM observability and cost monitoring",
+      "Create automated evaluation pipelines",
+      "Manage LoRA fine-tuning workflows on AWS/GCP"
+    ],
+    "requirements": [
+      "1-2 years MLOps or DevOps experience",
+      "Strong Python skills",
+      "Docker and Kubernetes proficiency",
+      "CI/CD pipeline experience",
+      "Cloud platform experience (AWS/GCP/Azure)"
+    ]
+  },
+  {
+    "id": "job_004",
+    "title": "AI Platform Engineer",
+    "company": "HorizonAI Systems",
+    "location": "San Francisco, CA",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": false,
+    "salary_range": "$110,000-$160,000/year",
+    "skills": ["Python", "FastAPI", "ChromaDB", "Pinecone", "Weaviate", "LangChain", "embeddings", "Docker", "Kubernetes", "semantic search", "RAG", "REST API", "system design"],
+    "description": "Build and maintain the internal AI platform including embedding services, vector DB management, and LLM gateways. Design scalable ingestion pipelines for multi-modal data. Build developer tooling: SDKs, CLI tools, and internal APIs. Implement semantic caching layers to reduce LLM costs. Own the vector database infrastructure at scale.",
+    "responsibilities": [
+      "Build internal AI platform with embedding services and vector DB management",
+      "Design scalable ingestion pipelines for text and PDF data",
+      "Build developer SDKs and CLI tools for AI teams",
+      "Implement semantic caching for LLM cost reduction",
+      "Contribute to open-source AI infrastructure tools"
+    ],
+    "requirements": [
+      "1-3 years software engineering experience",
+      "Strong Python and FastAPI skills",
+      "Vector database experience",
+      "LangChain or LlamaIndex experience",
+      "Docker and Kubernetes proficiency"
+    ]
+  },
+  {
+    "id": "job_005",
+    "title": "ML Infrastructure Engineer",
+    "company": "Apex ML",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$100,000-$145,000/year",
+    "skills": ["Python", "PyTorch", "TensorFlow", "Docker", "AWS", "MLflow", "FastAPI", "CI/CD", "GitHub Actions", "Airflow", "machine learning", "model serving", "SQL"],
+    "description": "Build and maintain ML training and inference pipelines. Design data pipelines for feature engineering and model training. Implement model serving infrastructure using FastAPI and Docker. Build monitoring systems for model drift and latency. Create CI/CD pipelines for model deployment using GitHub Actions.",
+    "responsibilities": [
+      "Build ML training and inference pipelines",
+      "Design data pipelines for feature engineering",
+      "Implement model serving with FastAPI and Docker",
+      "Build model monitoring for drift and latency",
+      "Create CI/CD pipelines with GitHub Actions"
+    ],
+    "requirements": [
+      "1-2 years software or data engineering experience",
+      "Python proficiency",
+      "PyTorch or TensorFlow familiarity",
+      "Docker and containerization experience",
+      "AWS basic experience"
+    ]
+  },
+  {
+    "id": "job_006",
+    "title": "Agentic AI Engineer",
+    "company": "AgentForge Inc",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$95,000-$135,000/year",
+    "skills": ["Python", "LangGraph", "LangChain", "agentic AI", "multi-agent", "tool use", "FastAPI", "ChromaDB", "RAG", "Gemini", "OpenAI", "prompt engineering"],
+    "description": "Build autonomous AI agents using LangGraph for multi-step task orchestration. Design supervisor-worker agent architectures for complex workflows. Implement tool-use patterns allowing agents to call external APIs. Build memory and context management systems for long-running agents. Create agent evaluation frameworks to measure task completion quality.",
+    "responsibilities": [
+      "Build autonomous AI agents with LangGraph",
+      "Design multi-agent supervisor-worker architectures",
+      "Implement tool-use for external API integration",
+      "Build agent memory and context management systems",
+      "Create agent evaluation and testing frameworks"
+    ],
+    "requirements": [
+      "Python proficiency",
+      "LangGraph or similar agent framework experience",
+      "Understanding of multi-agent architectures",
+      "RAG and vector search knowledge",
+      "FastAPI backend experience"
+    ]
+  },
+  {
+    "id": "job_007",
+    "title": "NLP Engineer Intern",
+    "company": "TextMind AI",
+    "location": "Remote",
+    "experience_level": "intern",
+    "employment_type": "internship",
+    "remote": true,
+    "salary_range": "$2,500-$4,000/month",
+    "skills": ["Python", "NLP", "transformers", "Hugging Face", "sentence-transformers", "PyTorch", "spacy", "NLTK", "FastAPI", "Git", "embeddings"],
+    "description": "Work on NLP pipelines for text classification, named entity recognition, and semantic similarity. Fine-tune transformer models using Hugging Face. Build text preprocessing and feature extraction pipelines. Implement information extraction systems from unstructured documents. Contribute to model evaluation frameworks.",
+    "responsibilities": [
+      "Build NLP pipelines for text classification and NER",
+      "Fine-tune transformer models with Hugging Face",
+      "Implement text preprocessing pipelines",
+      "Build information extraction from unstructured documents",
+      "Contribute to model evaluation frameworks"
+    ],
+    "requirements": [
+      "Currently pursuing CS, AI, or Linguistics degree",
+      "Python proficiency",
+      "NLP coursework or project experience",
+      "Transformers and Hugging Face familiarity",
+      "Basic ML knowledge"
+    ]
+  },
+  {
+    "id": "job_008",
+    "title": "Vector Search Engineer",
+    "company": "SearchScale Technologies",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$100,000-$140,000/year",
+    "skills": ["Python", "Pinecone", "Weaviate", "Qdrant", "ChromaDB", "FAISS", "pgvector", "sentence-transformers", "OpenAI embeddings", "FastAPI", "PostgreSQL", "vector search", "semantic search"],
+    "description": "Design and optimize vector search systems for production workloads handling millions of documents. Benchmark and compare vector database solutions (Pinecone, Weaviate, Qdrant, FAISS). Implement Approximate Nearest Neighbor (ANN) algorithms. Build hybrid search combining semantic and keyword retrieval. Optimize indexing strategies for low-latency retrieval at scale.",
+    "responsibilities": [
+      "Design production vector search systems at scale",
+      "Benchmark vector database solutions",
+      "Implement ANN algorithms and indexing strategies",
+      "Build hybrid search (semantic + keyword)",
+      "Optimize retrieval latency for production SLAs"
+    ],
+    "requirements": [
+      "1-2 years backend engineering experience",
+      "Strong Python skills",
+      "Experience with at least one vector database",
+      "Understanding of ANN algorithms",
+      "Database optimization knowledge"
+    ]
+  },
+  {
+    "id": "job_009",
+    "title": "AI Research Engineer",
+    "company": "DeepContext Labs",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$105,000-$150,000/year",
+    "skills": ["Python", "PyTorch", "transformers", "Hugging Face", "fine-tuning", "LoRA", "RLHF", "deep learning", "NLP", "embeddings", "research", "LangChain"],
+    "description": "Conduct research on improving LLM performance for domain-specific applications. Implement and evaluate fine-tuning techniques (LoRA, QLoRA, full fine-tuning). Build evaluation benchmarks for domain-specific LLM tasks. Explore RLHF and DPO alignment techniques. Publish findings in internal technical reports and external venues.",
+    "responsibilities": [
+      "Research LLM performance improvements for specific domains",
+      "Implement and evaluate LoRA and QLoRA fine-tuning",
+      "Build evaluation benchmarks for LLM tasks",
+      "Explore RLHF and DPO alignment techniques",
+      "Write technical reports and research papers"
+    ],
+    "requirements": [
+      "Masters or strong BS in CS/AI/ML",
+      "PyTorch proficiency",
+      "Deep understanding of transformer architectures",
+      "Experience with Hugging Face ecosystem",
+      "Strong research and writing skills"
+    ]
+  },
+  {
+    "id": "job_010",
+    "title": "Backend Engineer — AI Products",
+    "company": "Luminary AI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$90,000-$125,000/year",
+    "skills": ["Python", "FastAPI", "LangChain", "PostgreSQL", "Redis", "Docker", "AWS", "REST API", "vector search", "embeddings", "GitHub Actions", "CI/CD"],
+    "description": "Build backend APIs for AI-powered product features. Integrate LLM capabilities into existing product surfaces. Design and maintain PostgreSQL schemas for AI feature data. Build caching layers using Redis to optimize LLM response latency. Deploy and monitor backend services on AWS using Docker and GitHub Actions.",
+    "responsibilities": [
+      "Build REST APIs for AI product features",
+      "Integrate LLM capabilities into product backend",
+      "Design PostgreSQL schemas for AI data",
+      "Build Redis caching for LLM response optimization",
+      "Deploy backend services on AWS with Docker"
+    ],
+    "requirements": [
+      "1-2 years backend engineering experience",
+      "Python and FastAPI proficiency",
+      "PostgreSQL experience",
+      "LangChain or similar LLM framework knowledge",
+      "Docker and AWS basics"
+    ]
+  },
+  {
+    "id": "job_011",
+    "title": "Generative AI Engineer",
+    "company": "CreativeAI Studio",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$88,000-$120,000/year",
+    "skills": ["Python", "Gemini", "OpenAI", "Anthropic", "LangChain", "prompt engineering", "FastAPI", "RAG", "fine-tuning", "embeddings", "JavaScript", "REST API"],
+    "description": "Build generative AI features using the latest LLM APIs (Gemini, Claude, GPT-4). Design and implement prompt engineering pipelines with versioning and evaluation. Integrate multi-modal models for text, image, and audio generation. Build content safety and moderation layers. A/B test prompts and models to optimize output quality.",
+    "responsibilities": [
+      "Build generative AI features using Gemini, Claude, GPT-4",
+      "Design prompt engineering pipelines with versioning",
+      "Integrate multi-modal models for text and image",
+      "Build content safety and moderation layers",
+      "A/B test prompts to optimize generation quality"
+    ],
+    "requirements": [
+      "Python and JavaScript proficiency",
+      "Hands-on experience with LLM APIs",
+      "Prompt engineering expertise",
+      "FastAPI backend experience",
+      "Understanding of generative AI concepts"
+    ]
+  },
+  {
+    "id": "job_012",
+    "title": "AI Intern — LangGraph Workflows",
+    "company": "FlowAI",
+    "location": "Remote",
+    "experience_level": "intern",
+    "employment_type": "internship",
+    "remote": true,
+    "salary_range": "$2,000-$3,200/month",
+    "skills": ["Python", "LangGraph", "LangChain", "FastAPI", "RAG", "ChromaDB", "agentic AI", "Git", "prompt engineering", "REST API"],
+    "description": "Join our workflow automation team to build AI-powered business workflows using LangGraph. Implement graph-based orchestration for multi-step AI tasks. Build state machines for document processing pipelines. Integrate tools and APIs as LangGraph nodes. Write tests and documentation for workflow modules.",
+    "responsibilities": [
+      "Build AI workflow orchestration with LangGraph",
+      "Implement graph-based multi-step task pipelines",
+      "Build state management for document processing",
+      "Integrate external APIs as LangGraph tool nodes",
+      "Write tests and documentation"
+    ],
+    "requirements": [
+      "Python proficiency",
+      "LangChain familiarity",
+      "Interest in agentic AI and workflow automation",
+      "FastAPI basics",
+      "Currently pursuing a CS or AI degree"
+    ]
+  },
+  {
+    "id": "job_013",
+    "title": "Data Engineer — ML Pipelines",
+    "company": "DataFlow AI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$85,000-$115,000/year",
+    "skills": ["Python", "Apache Airflow", "SQL", "PostgreSQL", "Spark", "pandas", "Docker", "AWS", "dbt", "Kafka", "data pipelines", "ETL", "MLflow"],
+    "description": "Build and maintain data pipelines that feed ML training and inference systems. Design ETL workflows using Apache Airflow. Implement feature engineering pipelines using Spark and pandas. Build data quality monitoring and alerting systems. Manage data lake and warehouse infrastructure on AWS.",
+    "responsibilities": [
+      "Build data pipelines for ML training systems",
+      "Design ETL workflows with Apache Airflow",
+      "Implement feature engineering with Spark",
+      "Build data quality monitoring systems",
+      "Manage data lake infrastructure on AWS"
+    ],
+    "requirements": [
+      "1-2 years data engineering experience",
+      "Strong Python and SQL skills",
+      "Apache Airflow experience",
+      "Spark or pandas proficiency",
+      "AWS data services knowledge"
+    ]
+  },
+  {
+    "id": "job_014",
+    "title": "Prompt Engineer",
+    "company": "Promptly Inc",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$80,000-$110,000/year",
+    "skills": ["Python", "prompt engineering", "LangChain", "Gemini", "OpenAI", "Anthropic", "LangSmith", "evaluation", "RAG", "JSON", "REST API", "JavaScript"],
+    "description": "Design, test, and optimize prompts for production LLM applications. Build prompt libraries with versioning and A/B testing infrastructure. Implement automated evaluation pipelines for prompt quality assessment. Work closely with product teams to translate requirements into effective prompts. Research and apply advanced prompting techniques (chain-of-thought, few-shot, tool use).",
+    "responsibilities": [
+      "Design and optimize prompts for production LLM apps",
+      "Build prompt versioning and A/B testing infrastructure",
+      "Implement automated prompt evaluation pipelines",
+      "Research advanced prompting techniques",
+      "Collaborate with product teams on LLM features"
+    ],
+    "requirements": [
+      "Strong analytical thinking and writing skills",
+      "Python proficiency",
+      "Hands-on experience with LLM APIs",
+      "Familiarity with prompt engineering techniques",
+      "LangSmith or similar evaluation tools experience"
+    ]
+  },
+  {
+    "id": "job_015",
+    "title": "Full Stack AI Developer",
+    "company": "Synapse AI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$85,000-$120,000/year",
+    "skills": ["Python", "FastAPI", "TypeScript", "Next.js", "React", "Tailwind CSS", "LangChain", "ChromaDB", "PostgreSQL", "Docker", "REST API", "embeddings"],
+    "description": "Build full-stack AI applications from backend APIs to polished frontend interfaces. Develop FastAPI backends with LangChain integration. Build Next.js frontends with real-time streaming LLM responses. Design intuitive UIs for AI features using Tailwind CSS and ShadCN. Maintain PostgreSQL databases and ChromaDB vector collections.",
+    "responsibilities": [
+      "Build FastAPI backends with LangChain integration",
+      "Develop Next.js frontends with streaming LLM responses",
+      "Design AI-focused UIs with Tailwind and ShadCN",
+      "Maintain PostgreSQL and ChromaDB infrastructure",
+      "Own full-stack features end-to-end"
+    ],
+    "requirements": [
+      "1-2 years full-stack development experience",
+      "Python and TypeScript proficiency",
+      "React/Next.js experience",
+      "FastAPI or Django knowledge",
+      "AI/LLM integration experience"
+    ]
+  },
+  {
+    "id": "job_016",
+    "title": "ML Engineer Intern",
+    "company": "Cascade AI",
+    "location": "Remote",
+    "experience_level": "intern",
+    "employment_type": "internship",
+    "remote": true,
+    "salary_range": "$2,500-$3,800/month",
+    "skills": ["Python", "PyTorch", "scikit-learn", "pandas", "numpy", "machine learning", "deep learning", "Jupyter", "Git", "Hugging Face", "transformers"],
+    "description": "Work with the ML team on training and evaluating models for classification and regression tasks. Implement feature engineering pipelines using pandas and scikit-learn. Train neural networks using PyTorch. Run experiments using Jupyter notebooks and track results with MLflow. Contribute to model evaluation and testing frameworks.",
+    "responsibilities": [
+      "Train and evaluate ML models for classification tasks",
+      "Implement feature engineering pipelines",
+      "Train neural networks with PyTorch",
+      "Run and track experiments with MLflow",
+      "Contribute to model evaluation frameworks"
+    ],
+    "requirements": [
+      "Enrolled in BS/MS CS or Data Science",
+      "Python proficiency",
+      "PyTorch or TensorFlow experience",
+      "Basic ML knowledge from coursework",
+      "pandas and numpy familiarity"
+    ]
+  },
+  {
+    "id": "job_017",
+    "title": "AI Safety and Evaluation Engineer",
+    "company": "SafeAI Research",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$100,000-$140,000/year",
+    "skills": ["Python", "LangSmith", "evaluation", "RLHF", "red teaming", "LangChain", "Gemini", "OpenAI", "Anthropic", "prompt engineering", "research", "statistics"],
+    "description": "Build evaluation frameworks for LLM safety, fairness, and quality. Design red-teaming workflows to identify model failure modes. Implement automated evaluation pipelines using LangSmith. Research alignment techniques and their practical applications. Build harm detection and content moderation systems. Collaborate with the research team on safety benchmarks.",
+    "responsibilities": [
+      "Build LLM evaluation frameworks for safety and quality",
+      "Design red-teaming workflows for model testing",
+      "Implement automated evaluation with LangSmith",
+      "Research alignment and safety techniques",
+      "Build content safety and moderation systems"
+    ],
+    "requirements": [
+      "Strong Python skills",
+      "Understanding of LLM capabilities and failure modes",
+      "Research background preferred",
+      "Statistics knowledge",
+      "Strong written communication skills"
+    ]
+  },
+  {
+    "id": "job_018",
+    "title": "Knowledge Graph and RAG Engineer",
+    "company": "KnowledgeAI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$92,000-$130,000/year",
+    "skills": ["Python", "LangChain", "Neo4j", "RAG", "knowledge graphs", "embeddings", "ChromaDB", "Pinecone", "NLP", "FastAPI", "GraphQL", "entity extraction"],
+    "description": "Build knowledge graph-enhanced RAG systems for improved retrieval accuracy. Design and populate Neo4j knowledge graphs from unstructured documents. Implement entity extraction and relationship mapping pipelines. Build graph-RAG hybrid retrieval combining structured and semantic search. Create APIs for knowledge graph querying and RAG integration.",
+    "responsibilities": [
+      "Build knowledge graph-enhanced RAG systems",
+      "Design and populate Neo4j graphs from documents",
+      "Implement entity extraction and relationship mapping",
+      "Build graph-RAG hybrid retrieval systems",
+      "Create APIs for knowledge graph querying"
+    ],
+    "requirements": [
+      "Python proficiency",
+      "RAG and vector search experience",
+      "Graph database knowledge (Neo4j or similar)",
+      "NLP and entity extraction experience",
+      "FastAPI experience"
+    ]
+  },
+  {
+    "id": "job_019",
+    "title": "DevOps Engineer — AI Infrastructure",
+    "company": "CloudMind Systems",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$90,000-$125,000/year",
+    "skills": ["Docker", "Kubernetes", "AWS", "GCP", "Terraform", "GitHub Actions", "CI/CD", "Python", "Linux", "bash", "monitoring", "Prometheus", "Grafana"],
+    "description": "Build and maintain the cloud infrastructure that powers our AI platform. Design containerized deployments for ML model serving and AI backends. Implement infrastructure-as-code using Terraform on AWS and GCP. Build CI/CD pipelines for automated testing and deployment. Set up monitoring, alerting, and observability using Prometheus and Grafana.",
+    "responsibilities": [
+      "Build cloud infrastructure for AI platform on AWS/GCP",
+      "Design containerized ML model serving deployments",
+      "Implement Terraform infrastructure-as-code",
+      "Build CI/CD pipelines for automated deployment",
+      "Set up monitoring with Prometheus and Grafana"
+    ],
+    "requirements": [
+      "1-2 years DevOps or cloud engineering experience",
+      "Docker and Kubernetes proficiency",
+      "AWS or GCP experience",
+      "Terraform or Pulumi knowledge",
+      "CI/CD pipeline experience"
+    ]
+  },
+  {
+    "id": "job_020",
+    "title": "AI Product Engineer (RAG + Agents)",
+    "company": "BuildWithAI",
+    "location": "Remote",
+    "experience_level": "entry",
+    "employment_type": "full-time",
+    "remote": true,
+    "salary_range": "$88,000-$125,000/year",
+    "skills": ["Python", "LangGraph", "LangChain", "RAG", "FastAPI", "ChromaDB", "Pinecone", "TypeScript", "Next.js", "agentic AI", "embeddings", "prompt engineering", "Gemini"],
+    "description": "Build AI-powered product features combining RAG pipelines and agentic workflows. Design LangGraph-based agents that can autonomously complete multi-step tasks. Implement semantic search and knowledge retrieval using ChromaDB. Build full-stack AI features with FastAPI backends and Next.js frontends. Ship production AI features end-to-end.",
+    "responsibilities": [
+      "Build AI product features with RAG and LangGraph agents",
+      "Design autonomous agents for multi-step task completion",
+      "Implement semantic search with ChromaDB",
+      "Build full-stack features with FastAPI and Next.js",
+      "Ship production AI features end-to-end"
+    ],
+    "requirements": [
+      "Python and TypeScript proficiency",
+      "LangGraph or LangChain experience",
+      "RAG and vector search knowledge",
+      "FastAPI and Next.js experience",
+      "Passion for building AI-native products"
+    ]
+  }
+]

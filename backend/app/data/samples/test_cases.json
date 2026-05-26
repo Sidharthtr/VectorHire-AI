@@ -1,0 +1,42 @@
+[
+  {
+    "id": "tc_001",
+    "name": "AI intern search",
+    "query": "Looking for AI backend internships using FastAPI and LangGraph",
+    "expected_experience_levels": ["intern"],
+    "expected_top_skills": ["Python", "FastAPI", "LangGraph"],
+    "expected_min_results": 2
+  },
+  {
+    "id": "tc_002",
+    "name": "RAG engineer search",
+    "query": "Remote RAG engineering roles",
+    "expected_experience_levels": ["entry", "mid"],
+    "expected_top_skills": ["RAG", "LangChain", "ChromaDB", "embeddings"],
+    "expected_min_results": 3
+  },
+  {
+    "id": "tc_003",
+    "name": "LLMOps search",
+    "query": "Entry-level LLMOps internship positions",
+    "expected_experience_levels": ["intern", "entry"],
+    "expected_top_skills": ["LLMOps", "MLOps", "Docker", "Python"],
+    "expected_min_results": 1
+  },
+  {
+    "id": "tc_004",
+    "name": "Agentic AI search",
+    "query": "Agentic AI engineer roles with LangGraph and multi-agent systems",
+    "expected_experience_levels": ["entry"],
+    "expected_top_skills": ["LangGraph", "agentic AI", "multi-agent"],
+    "expected_min_results": 2
+  },
+  {
+    "id": "tc_005",
+    "name": "Vector DB specialist",
+    "query": "Vector database engineer with ChromaDB Pinecone Weaviate",
+    "expected_experience_levels": ["entry", "mid"],
+    "expected_top_skills": ["ChromaDB", "Pinecone", "Weaviate", "vector search"],
+    "expected_min_results": 2
+  }
+]

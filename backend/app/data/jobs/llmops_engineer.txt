@@ -1,0 +1,39 @@
+Job Title: LLMOps Engineer
+Company: Orion AI Platform
+Location: Remote (USA)
+Experience Level: Entry-Level
+Employment Type: Full-Time
+Salary Range: $90,000 - $130,000/year
+
+About Orion AI Platform:
+Orion AI Platform provides infrastructure tooling for teams deploying LLMs in production. We build model gateways, prompt version management systems, cost tracking dashboards, and observability pipelines for AI-native companies.
+
+Role Summary:
+We are looking for an LLMOps Engineer to help us build and maintain the operational infrastructure around our LLM deployments. You will be the bridge between AI research and production engineering.
+
+Responsibilities:
+- Design and manage LLM serving infrastructure using vLLM and TGI
+- Build prompt management systems with versioning, A/B testing, and rollback
+- Implement LLM observability pipelines (latency, cost, quality metrics)
+- Create automated evaluation pipelines for LLM outputs using LangSmith
+- Manage model fine-tuning workflows (LoRA, QLoRA) on cloud infrastructure
+- Build cost optimization strategies for LLM API usage
+- Integrate with cloud platforms: AWS SageMaker, GCP Vertex AI
+- Monitor model drift and implement automated alerting systems
+
+Requirements:
+- 1-2 years experience in MLOps, DevOps, or backend engineering
+- Strong Python skills
+- Understanding of LLM internals: tokenization, context windows, inference optimization
+- Experience with Docker and Kubernetes
+- Familiarity with CI/CD pipelines (GitHub Actions, Jenkins)
+- Basic knowledge of LLM fine-tuning (LoRA, PEFT)
+- Experience with at least one cloud platform (AWS, GCP, or Azure)
+
+Nice to Have:
+- Experience with vLLM, TGI, or Triton inference server
+- Knowledge of quantization (GGUF, GPTQ, AWQ)
+- LangSmith, Weights & Biases, or MLflow experience
+- Familiarity with Kubernetes-based model serving
+
+Skills: Python, Docker, Kubernetes, LLMOps, MLOps, LangSmith, LoRA, fine-tuning, vLLM, AWS, GCP, GitHub Actions, CI/CD, prompt engineering, FastAPI

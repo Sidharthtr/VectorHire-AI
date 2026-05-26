@@ -1,0 +1,40 @@
+Job Title: ML Infrastructure Engineer
+Company: Apex ML
+Location: Remote (US/EU)
+Experience Level: Entry-Level
+Employment Type: Full-Time
+Salary Range: $100,000 - $145,000/year
+
+About Apex ML:
+Apex ML provides ML infrastructure solutions to companies transitioning from prototype to production AI. Our tools help data science teams deploy models faster, monitor them better, and iterate more rapidly.
+
+Role Summary:
+We are hiring an ML Infrastructure Engineer to build the plumbing that keeps our ML systems running reliably in production. You will work at the intersection of software engineering, DevOps, and machine learning.
+
+Responsibilities:
+- Build and maintain ML training and inference pipelines
+- Design data pipelines for feature engineering and model training
+- Implement model serving infrastructure using FastAPI and Docker
+- Build monitoring systems for model drift, latency, and accuracy
+- Create CI/CD pipelines for model deployment (GitHub Actions)
+- Manage GPU compute resources on AWS (SageMaker, EC2 G5 instances)
+- Build feature stores and training data management systems
+- Collaborate with data scientists to productionize research models
+
+Requirements:
+- 1-2 years of software engineering or data engineering experience
+- Strong Python skills
+- Familiarity with PyTorch or TensorFlow
+- Experience with Docker and containerization
+- Understanding of CI/CD pipelines
+- Basic cloud experience (AWS preferred)
+- Knowledge of MLflow or similar experiment tracking tools
+- SQL proficiency
+
+Nice to Have:
+- Experience with Apache Airflow or Prefect for pipeline orchestration
+- Kubernetes experience
+- Knowledge of ONNX model optimization
+- Familiarity with Triton Inference Server
+
+Skills: Python, PyTorch, TensorFlow, Docker, AWS, MLflow, FastAPI, CI/CD, GitHub Actions, Airflow, machine learning, model serving, feature store, SQL

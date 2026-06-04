@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from app.schemas.job_schema import RankedJob
 from app.schemas.resume_schema import ParsedResume
 from app.llm.chains import run_explanation_chain, run_suggestions_chain, run_overall_summary_chain
@@ -6,15 +7,31 @@ from collections import Counter
 
 logger = get_logger(__name__)
 
+_EXPLAIN_TOP_N = 3        # Only explain top N jobs
+_MAX_WORKERS   = 3        # Parallel LLM threads
+
 
 class ExplanationService:
     def explain_top_matches(self, ranked_jobs: list[RankedJob], resume: ParsedResume) -> list[RankedJob]:
-        explained = []
-        for job in ranked_jobs[:5]:  # explain top 5 to stay within free tier limits
-            explanation = self._generate_explanation(job, resume)
-            explained.append(job.model_copy(update={"explanation": explanation}))
-        # remaining jobs without explanation
-        explained.extend(ranked_jobs[5:])
+        top = ranked_jobs[:_EXPLAIN_TOP_N]
+        rest = ranked_jobs[_EXPLAIN_TOP_N:]
+
+        # Run explanation calls in parallel — 3x faster than sequential
+        with ThreadPoolExecutor(max_workers=_MAX_WORKERS) as executor:
+            futures = {
+                executor.submit(self._generate_explanation, job, resume): i
+                for i, job in enumerate(top)
+            }
+            results = {}
+            for future in as_completed(futures):
+                idx = futures[future]
+                results[idx] = future.result()
+
+        explained = [
+            top[i].model_copy(update={"explanation": results[i]})
+            for i in range(len(top))
+        ]
+        explained.extend(rest)
         return explained
 
     def _generate_explanation(self, job: RankedJob, resume: ParsedResume) -> str:

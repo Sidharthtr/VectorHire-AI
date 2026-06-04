@@ -1,3 +1,4 @@
+from __future__ import annotations
 from sentence_transformers import SentenceTransformer
 from typing import Union
 import numpy as np

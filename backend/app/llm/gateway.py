@@ -1,4 +1,4 @@
-from app.llm.providers import gemini_provider
+from app.llm.providers import openrouter_provider as gemini_provider
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

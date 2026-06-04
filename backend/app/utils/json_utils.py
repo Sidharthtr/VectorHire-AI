@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 
 def load_json(path: Path) -> Any:
@@ -16,7 +16,6 @@ def save_json(data: Any, path: Path, indent: int = 2) -> None:
 
 def safe_parse_json(text: str) -> tuple[Any, Optional[str]]:
     """Parse JSON from LLM output that may contain markdown fences."""
-    from typing import Optional
     cleaned = text.strip()
     if cleaned.startswith("```"):
         lines = cleaned.split("\n")

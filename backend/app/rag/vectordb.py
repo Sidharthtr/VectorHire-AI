@@ -1,3 +1,4 @@
+from __future__ import annotations
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 from pathlib import Path

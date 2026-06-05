@@ -139,6 +139,16 @@ def run_ingestion(
     # Step 5: Persist metadata to PostgreSQL (non-blocking)
     _persist_metadata(unique_jobs[:stored])
 
+    # Step 6: Invalidate search cache — new jobs are in ChromaDB,
+    # stale cached results would miss them.
+    try:
+        from app.core.redis_client import cache_delete_pattern
+        deleted = cache_delete_pattern("search:*")
+        if deleted:
+            logger.info(f"Search cache invalidated after ingestion: {deleted} keys cleared")
+    except Exception as e:
+        logger.debug(f"Cache invalidation skipped: {e}")
+
     logger.info(
         f"Ingestion complete — fetched={result.total_fetched}, "
         f"normalised={result.total_normalised}, "

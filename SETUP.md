@@ -5,13 +5,15 @@
 
 >The most critical order of operations is:
 
-<!-- Install Python 3.11 + Node.js 20
-pip install -r requirements.txt (inside a venv)
-Add GEMINI_API_KEY to backend/.env
-python scripts/generate_resumes.py → makes the dummy PDFs
-python scripts/seed_vectordb.py → populates ChromaDB (without this, no jobs appear)
-uvicorn app.main:app --reload → start backend
-npm install && npm run dev → start frontend at http://localhost:3000 -->
+<!-- 
+-Install Python 3.11 + Node.js 20
+-pip install -r requirements.txt (inside a venv)
+-Add GEMINI_API_KEY to backend/.env
+-python scripts/generate_resumes.py → makes the dummy PDFs
+-python scripts/seed_vectordb.py → populates ChromaDB (without this, no jobs appear)
+-uvicorn app.main:app --reload → start backend
+-npm install && npm run dev → start frontend at http://localhost:3000
+ -->
 
 ---
 

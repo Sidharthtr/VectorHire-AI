@@ -1,0 +1,139 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# VectorHire AI — Production Docker Compose
+#
+# Services:
+#   postgres   — metadata DB (resumes, analyses, evaluations)
+#   chromadb   — vector store (job embeddings, resume embeddings)
+#   redis      — cache (resume results, search results, LLM responses)
+#   backend    — FastAPI application
+#   frontend   — Next.js application
+#
+# Usage:
+#   docker compose up -d                    # start all services
+#   docker compose logs -f backend          # tail backend logs
+#   docker compose down                     # stop all services
+#   docker compose down -v                  # stop + delete volumes (wipes data!)
+#
+# First run:
+#   1. Copy .env.example to backend/.env and fill in OPENROUTER_API_KEY
+#   2. docker compose up -d
+#   3. Open http://localhost:3000
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: vectorhire_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       vectorhire
+      POSTGRES_USER:     vectorhire
+      POSTGRES_PASSWORD: vectorhire
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"        # expose on host for DB tools (TablePlus, DBeaver)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vectorhire -d vectorhire"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── ChromaDB ────────────────────────────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:0.5.23
+    container_name: vectorhire_chromadb
+    restart: unless-stopped
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+      ALLOW_RESET: "true"          # enables /api/v1/reset endpoint for dev
+    volumes:
+      - chroma_data:/chroma/chroma
+    ports:
+      - "8001:8000"                # host:8001 → container:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: vectorhire_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Backend (FastAPI) ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vectorhire_backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      # Override .env values for Docker networking
+      DATABASE_URL:          postgresql://vectorhire:vectorhire@postgres:5432/vectorhire
+      REDIS_URL:             redis://redis:6379/0
+      USE_CHROMADB_SERVER:   "true"
+      CHROMADB_HOST:         chromadb
+      CHROMADB_PORT:         "8000"           # internal port inside Docker network
+    volumes:
+      - resume_uploads:/app/app/data/resumes  # persist uploaded PDFs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 90s     # alembic + uvicorn bind; model is pre-baked in image
+      retries: 5
+
+  # ── Frontend (Next.js) ──────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vectorhire_frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000   # browser calls backend on host port
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        # service_started (not service_healthy) lets the frontend container boot
+        # immediately. The browser talks to the backend via localhost:8000, so
+        # frontend just needs the port to exist — not for the backend to be "healthy".
+        condition: service_started
+
+
+# ── Named volumes (Docker manages the storage location) ────────────────────
+volumes:
+  postgres_data:
+  chroma_data:
+  redis_data:
+  resume_uploads:

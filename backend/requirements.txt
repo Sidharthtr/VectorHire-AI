@@ -41,11 +41,14 @@ rank-bm25==0.2.2
 # Database
 sqlalchemy==2.0.36
 alembic==1.14.0
-aiosqlite==0.20.0
+aiosqlite==0.20.0        # SQLite async driver (local dev)
+psycopg2-binary==2.9.10  # PostgreSQL driver (Docker / production)
 
-# Evaluation (optional heavy deps - graceful fallback if not installed)
-# ragas and deepeval intentionally left out of base requirements
-# install separately: pip install ragas deepeval
+# Redis cache
+redis[hiredis]==5.2.1    # hiredis = fast C parser for Redis protocol
+
+# Evaluation (optional — graceful fallback if not installed)
+# pip install ragas deepeval
 
 # Scoring
 scikit-learn==1.5.2

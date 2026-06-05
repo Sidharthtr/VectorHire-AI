@@ -1,19 +1,34 @@
+"""
+Resume service — handles PDF upload, parsing, LLM extraction, and caching.
+
+Cache hierarchy (fastest → slowest):
+  1. Redis  (distributed, survives restarts, TTL=7 days)
+  2. JSON file  (local fallback when Redis not configured)
+  3. LLM extraction  (only runs on genuine cache miss)
+
+Same PDF (same SHA-256 hash) → always returns the same ParsedResume.
+"""
+from __future__ import annotations
+
 import uuid
 import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
+
 from app.resume.parser import parse_pdf_bytes
 from app.resume.extractor import basic_extract
 from app.llm.chains import run_skill_extraction_chain
 from app.schemas.resume_schema import ParsedResume, Education, WorkExperience, Project
 from app.core.constants import RESUMES_DIR, DATA_DIR
 from app.core.logging import get_logger
+from app.core.redis_client import cache_get, cache_set, make_hash
+from app.core.settings import get_settings
 
 logger = get_logger(__name__)
 
 _CACHE_FILE = DATA_DIR / "resume_cache.json"
-_CACHE_MAX  = 100   # max cached resumes
+_CACHE_MAX  = 100
 
 
 class ResumeService:
@@ -21,6 +36,7 @@ class ResumeService:
         resume_id = uuid.uuid4().hex
         cache_key = hashlib.sha256(content).hexdigest()
 
+        # Try Redis first, then JSON file fallback
         cached = self._cache_get(cache_key)
         if cached:
             logger.info(f"Cache hit for resume {cache_key[:8]} — skipping LLM extraction")
@@ -66,32 +82,55 @@ class ResumeService:
         dest = RESUMES_DIR / f"{resume_id}_{filename}"
         dest.write_bytes(content)
 
+    # ── Cache read: Redis → JSON file ─────────────────────────────────────────
+
     def _cache_get(self, key: str) -> ParsedResume | None:
+        # 1. Redis
+        settings = get_settings()
+        if settings.redis_url:
+            data = cache_get(f"resume:{key}")
+            if data:
+                try:
+                    return ParsedResume(**data)
+                except Exception as e:
+                    logger.warning(f"Redis resume parse error: {e}")
+
+        # 2. JSON file fallback
         try:
-            cache = self._load_cache()
-            if key in cache:
-                return ParsedResume(**cache[key]["resume"])
+            file_cache = self._load_json_cache()
+            if key in file_cache:
+                return ParsedResume(**file_cache[key]["resume"])
         except Exception as e:
-            logger.warning(f"Cache read error: {e}")
+            logger.warning(f"JSON cache read error: {e}")
+
         return None
 
+    # ── Cache write: Redis + JSON file ────────────────────────────────────────
+
     def _cache_set(self, key: str, parsed: ParsedResume) -> None:
+        dumped = parsed.model_dump()
+
+        # 1. Redis
+        settings = get_settings()
+        if settings.redis_url:
+            cache_set(f"resume:{key}", dumped, ttl=settings.redis_ttl_resume)
+
+        # 2. JSON file (always write — serves as persistent backup)
         try:
-            cache = self._load_cache()
+            cache = self._load_json_cache()
             cache[key] = {
-                "resume": parsed.model_dump(),
+                "resume": dumped,
                 "cached_at": datetime.now().isoformat(),
             }
-            # Evict oldest entries beyond limit
             if len(cache) > _CACHE_MAX:
                 oldest = next(iter(cache))
                 del cache[oldest]
             _CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
             _CACHE_FILE.write_text(json.dumps(cache, indent=2, default=str))
         except Exception as e:
-            logger.warning(f"Cache write error: {e}")
+            logger.warning(f"JSON cache write error: {e}")
 
-    def _load_cache(self) -> dict:
+    def _load_json_cache(self) -> dict:
         if _CACHE_FILE.exists():
             try:
                 return json.loads(_CACHE_FILE.read_text())

@@ -53,6 +53,19 @@ def generate(prompt: str, temperature: float | None = None, max_tokens: int | No
     import time as _time
     global _last_all_failed_at
 
+    # Redis LLM cache — same prompt → same result, no API call needed.
+    # Only cache deterministic prompts (temperature=0.1 structured calls).
+    # Skip cache for high-temperature creative calls (explanations vary intentionally).
+    _temp_for_cache = temperature if temperature is not None else get_settings().llm_temperature
+    _use_cache = _temp_for_cache <= 0.15
+    if _use_cache:
+        from app.core.redis_client import cache_get, cache_set, make_hash
+        _cache_key = f"llm:{make_hash(prompt)}"
+        _cached = cache_get(_cache_key)
+        if _cached and isinstance(_cached, str):
+            logger.debug("LLM cache hit")
+            return _cached
+
     # Circuit breaker: if all models failed recently, don't waste time trying again
     seconds_since_failure = _time.time() - _last_all_failed_at
     if _last_all_failed_at > 0 and seconds_since_failure < _CIRCUIT_OPEN_SECONDS:
@@ -77,7 +90,12 @@ def generate(prompt: str, temperature: float | None = None, max_tokens: int | No
             )
             if model != settings.llm_model:
                 logger.info(f"Used fallback model: {model}")
-            return response.choices[0].message.content
+            result = response.choices[0].message.content
+            # Store in Redis cache for deterministic prompts
+            if _use_cache:
+                from app.core.redis_client import cache_set, make_hash
+                cache_set(f"llm:{make_hash(prompt)}", result, ttl=get_settings().redis_ttl_llm)
+            return result
         except RateLimitError:
             # 429 — skip instantly, try next model
             logger.warning(f"Model {model} rate-limited, skipping instantly")

@@ -19,11 +19,18 @@ ENV/
 .env.local
 .env.*.local
 
-# ChromaDB data
+# ChromaDB local data (vector store, recreated by seeding)
 backend/app/data/chroma/
 
-# Uploaded resumes (runtime)
-backend/app/data/resumes/*.pdf
+# Uploaded resumes / samples (runtime files, not source)
+backend/app/data/resumes/
+backend/app/data/samples/
+
+# SQLite database (local dev only; PostgreSQL used in Docker)
+*.db
+*.sqlite
+*.db-shm
+*.db-wal
 
 # Node.js
 node_modules/
@@ -34,13 +41,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# IDE
+# IDE & OS
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 .DS_Store
 Thumbs.db
+
+# Security — never commit keys/certs
+*.pem
+*.key
+*.p12
+*.pfx
 
 # Logs
 *.log
@@ -59,6 +73,24 @@ coverage.xml
 
 # pytest
 .pytest_cache/
+
+# HuggingFace / sentence-transformers model cache (large, downloaded at runtime)
+.cache/
+sentence_transformers_cache/
+models/
+
+# Ruff / linter caches
+.ruff_cache/
+
+# Docker build context leftovers
+docker/Dockerfile
+
+# Alembic compiled artifacts (migrations themselves should be committed)
+alembic/__pycache__/
+alembic/versions/__pycache__/
+
+# Claude Code project settings (local dev tool, not project source)
+.claude/
 
 # Misc
 *.tmp

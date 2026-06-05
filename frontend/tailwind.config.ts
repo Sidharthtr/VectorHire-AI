@@ -18,6 +18,22 @@ const config: Config = {
           700: "#2d4ee0",
           900: "#1a1a2e",
         },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

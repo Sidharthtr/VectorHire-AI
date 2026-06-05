@@ -71,6 +71,7 @@ class AdzunaIngestor(BaseIngestor):
         raw_jobs: list[RawJob] = []
         for item in data.get("results", []):
             raw_jobs.append(RawJob(
+                source_job_id=str(item.get("id", "")),
                 title=item.get("title", ""),
                 company=item.get("company", {}).get("display_name", "Unknown"),
                 location=item.get("location", {}).get("display_name", location),
@@ -78,7 +79,7 @@ class AdzunaIngestor(BaseIngestor):
                 url=item.get("redirect_url", ""),
                 salary_min=item.get("salary_min"),
                 salary_max=item.get("salary_max"),
-                skills=[],          # Adzuna doesn't return skills — normalizer extracts them
+                skills=[],
                 remote="remote" in item.get("description", "").lower(),
                 employment_type="full-time",
                 experience_level="",

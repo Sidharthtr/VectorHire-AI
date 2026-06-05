@@ -42,6 +42,7 @@ class RawJob(TypedDict, total=False):
     Intermediate format all adapters must produce.
     All fields optional — normalizer handles missing values gracefully.
     """
+    source_job_id: str          # API's own ID (Adzuna job ID, Arbeitnow slug)
     title: str
     company: str
     location: str
@@ -81,6 +82,8 @@ def normalise(raw: RawJob) -> Optional[JobDocument]:
 
     return JobDocument(
         id=job_id,
+        source_job_id=raw.get("source_job_id") or None,
+        source=source,
         title=title,
         company=company,
         location=_clean(raw.get("location", "Remote")),

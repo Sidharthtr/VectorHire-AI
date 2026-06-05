@@ -28,6 +28,7 @@ class JobSearchResponse(BaseModel):
 class AnalysisResponse(BaseModel):
     success: bool
     resume_id: str
+    analysis_id: Optional[str] = None
     top_jobs: list[RankedJob]
     overall_match_summary: str
     top_missing_skills: list[str]

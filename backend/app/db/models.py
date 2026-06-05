@@ -14,7 +14,7 @@ These two systems are complementary, not competing.
 from __future__ import annotations
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Text, Float, DateTime, ForeignKey, JSON
+from sqlalchemy import String, Text, Float, DateTime, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
@@ -28,6 +28,7 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_new_id)
     email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False, server_default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     resumes: Mapped[list["Resume"]] = relationship("Resume", back_populates="user")
@@ -63,6 +64,16 @@ class ResumeAnalysis(Base):
     resume: Mapped["Resume"] = relationship("Resume", back_populates="analyses")
 
 
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_new_id)
+    analysis_id: Mapped[str] = mapped_column(String(32), ForeignKey("resume_analysis.id"), index=True)
+    role: Mapped[str] = mapped_column(String(16))   # "user" | "assistant"
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class JobSearch(Base):
     __tablename__ = "job_searches"
 
@@ -92,3 +103,21 @@ class Evaluation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     search: Mapped["JobSearch | None"] = relationship("JobSearch", back_populates="evaluations")
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id: Mapped[str] = mapped_column(String(16), primary_key=True)   # MD5(title|company|source)
+    source_job_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    source: Mapped[str] = mapped_column(String(50), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    company: Mapped[str] = mapped_column(String(255))
+    location: Mapped[str] = mapped_column(String(255))
+    description_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    remote: Mapped[bool] = mapped_column(Boolean, default=False)
+    experience_level: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    employment_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    salary_range: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

@@ -107,6 +107,7 @@ def sparse_retrieve(
     query: str,
     top_k: int = DEFAULT_TOP_K,
     experience_level: Optional[str] = None,
+    remote_only: bool = False,
 ) -> list[tuple[JobDocument, float, int]]:
     """
     BM25 keyword search over job descriptions.
@@ -120,18 +121,16 @@ def sparse_retrieve(
     tokens = _tokenise(query)
     raw_scores = bm25.get_scores(tokens)
 
-    # Normalise scores to [0, 1]
     max_score = max(raw_scores) if max(raw_scores) > 0 else 1.0
     norm_scores = [float(s) / max_score for s in raw_scores]
 
-    # Pair each job with its normalised score
     scored = list(zip(all_jobs, norm_scores))
 
-    # Filter by experience level if requested
     if experience_level:
         scored = [(j, s) for j, s in scored if j.experience_level == experience_level]
+    if remote_only:
+        scored = [(j, s) for j, s in scored if j.remote]
 
-    # Sort descending and take top_k
     scored.sort(key=lambda x: x[1], reverse=True)
     top = scored[:top_k]
 

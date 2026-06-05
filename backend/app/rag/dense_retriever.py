@@ -1,11 +1,5 @@
 """
 Dense (semantic) retriever — wrapper around ChromaDB cosine similarity search.
-
-This is an extraction of the original retriever.py logic into a standalone module
-so it can be composed with sparse retrieval in the hybrid pipeline.
-
-Input:  query string + optional filters
-Output: list of (JobDocument, similarity_score, rank)
 """
 from __future__ import annotations
 from app.rag.vectordb import get_jobs_collection, query_collection
@@ -26,10 +20,28 @@ def _parse_list_field(value) -> list[str]:
     return []
 
 
+def _build_where(
+    experience_level: Optional[str],
+    remote_only: bool,
+) -> Optional[dict]:
+    """Build ChromaDB where filter from optional constraints."""
+    conditions = []
+    if experience_level:
+        conditions.append({"experience_level": {"$eq": experience_level}})
+    if remote_only:
+        conditions.append({"remote": {"$eq": True}})
+    if not conditions:
+        return None
+    if len(conditions) == 1:
+        return conditions[0]
+    return {"$and": conditions}
+
+
 def dense_retrieve(
     query: str,
     top_k: int = DEFAULT_TOP_K,
     experience_level: Optional[str] = None,
+    remote_only: bool = False,
 ) -> list[tuple[JobDocument, float, int]]:
     """
     Semantic search via ChromaDB.
@@ -38,8 +50,8 @@ def dense_retrieve(
     collection = get_jobs_collection()
     query_vec = embed_text(query)
 
-    where = {"experience_level": experience_level} if experience_level else None
-    results = query_collection(collection, query_vec, top_k=top_k * 2, where=where)
+    where = _build_where(experience_level, remote_only)
+    results = query_collection(collection, query_vec, top_k=top_k * 3, where=where)
 
     ids_list       = results.get("ids", [[]])[0]
     distances_list = results.get("distances", [[]])[0]
@@ -70,12 +82,11 @@ def dense_retrieve(
             remote=meta.get("remote", False),
             salary_range=meta.get("salary_range"),
         )
-        ranked.append((job, similarity, 0))  # rank filled below
+        ranked.append((job, similarity, 0))
 
         if len(ranked) >= top_k:
             break
 
-    # Assign ranks (1-indexed)
     ranked = [(job, score, i + 1) for i, (job, score, _) in enumerate(ranked)]
     logger.debug(f"Dense retrieval: {len(ranked)} results for '{query[:60]}'")
     return ranked

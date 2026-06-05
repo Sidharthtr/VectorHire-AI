@@ -21,6 +21,8 @@ async def search_jobs(query: JobSearchQuery):
             query=query.query,
             top_k=query.top_k,
             experience_level=query.experience_level,
+            remote_only=query.remote_only,
+            location=query.location,
         )
         ranked = [
             RankedJob(

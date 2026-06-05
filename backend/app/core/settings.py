@@ -56,6 +56,12 @@ class Settings(BaseSettings):
     adzuna_app_id: str = ""
     adzuna_api_key: str = ""
 
+    # ── Auth (JWT) ───────────────────────────────────────────────────────────
+    # JWT_SECRET_KEY must be set in .env — generate with: openssl rand -hex 32
+    jwt_secret_key: str = ""
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 10080   # 7 days
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

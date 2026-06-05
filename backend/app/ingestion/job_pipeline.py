@@ -1,28 +1,27 @@
 """
 Job ingestion pipeline — orchestrates fetch → normalise → deduplicate → embed → store.
 
-This is the main entry point for running the ingestion:
-
-    from app.ingestion.job_pipeline import run_ingestion
-    result = run_ingestion(query="Python developer", location="remote", limit=100)
-
-The pipeline:
-0. Cleanup jobs older than TTL_DAYS (default 30 days) from ChromaDB
-1. Calls every registered ingestor's fetch_jobs()
-2. Normalises raw jobs into JobDocuments
-3. Deduplicates by job ID (MD5 of title+company+source)
-4. Embeds and stores new jobs in ChromaDB
-5. Persists metadata to PostgreSQL (optional, non-blocking)
-6. Returns an IngestionResult summary
-
-Add a new source by:
-1. Creating a new adapter in adapters/
-2. Adding it to _get_ingestors() below
+Flow per run:
+  0. TTL cleanup — delete ChromaDB jobs older than 30 days
+  1. Fetch from all available ingestors
+  2. Normalise raw jobs → JobDocuments
+  3. ID-dedup — drop exact MD5(title|company|source) duplicates within the batch
+  4. Near-dup dedup — rapidfuzz title+company similarity > 95% within same source
+  5. PG registry check — load existing source_job_id → description_hash map
+       • same hash → skip re-embed (just touch last_seen_at in PG)
+       • changed hash → re-embed in ChromaDB + update PG
+       • new job → embed in ChromaDB + insert PG
+  6. Embed + store new/updated jobs in ChromaDB
+  7. Upsert all jobs to PG registry
+  8. Reset BM25 sparse index
+  9. Invalidate Redis search cache
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional
+
+from rapidfuzz import fuzz
 
 from app.ingestion.base_ingestor import BaseIngestor
 from app.ingestion.job_normalizer import normalise
@@ -32,8 +31,7 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-
-_TTL_DAYS = 30  # jobs older than this are deleted before each ingestion run
+_TTL_DAYS = 30
 
 
 @dataclass
@@ -41,18 +39,16 @@ class IngestionResult:
     """Summary returned after a pipeline run."""
     total_fetched: int = 0
     total_normalised: int = 0
-    total_deduplicated: int = 0
-    total_stored: int = 0
-    cleaned_up: int = 0          # jobs deleted because they exceeded TTL
+    total_deduplicated: int = 0   # exact ID duplicates removed
+    total_skipped: int = 0        # existing jobs with unchanged content
+    total_updated: int = 0        # existing jobs re-embedded due to content change
+    total_stored: int = 0         # newly embedded jobs
+    cleaned_up: int = 0
     errors: list[str] = field(default_factory=list)
     sources_used: list[str] = field(default_factory=list)
 
 
 def _get_ingestors() -> list[BaseIngestor]:
-    """
-    Return all registered ingestors.
-    Ingestors that are unavailable (missing credentials) are skipped.
-    """
     from app.ingestion.adapters.adzuna_adapter import AdzunaIngestor
     from app.ingestion.adapters.arbeitnow_adapter import ArbeitnowIngestor
 
@@ -64,24 +60,73 @@ def _get_ingestors() -> list[BaseIngestor]:
     return available
 
 
+def _near_dup_filter(jobs: list[JobDocument]) -> tuple[list[JobDocument], int]:
+    """
+    Remove near-duplicates within the same source.
+    Uses rapidfuzz token_sort_ratio on 'title company' strings.
+    Returns (unique_jobs, n_removed).
+    """
+    unique: list[JobDocument] = []
+    for job in jobs:
+        key = f"{job.title} {job.company}".lower()
+        is_dup = False
+        for existing in unique:
+            if existing.source != job.source:
+                continue
+            existing_key = f"{existing.title} {existing.company}".lower()
+            if fuzz.token_sort_ratio(key, existing_key) > 95:
+                is_dup = True
+                break
+        if not is_dup:
+            unique.append(job)
+    removed = len(jobs) - len(unique)
+    if removed:
+        logger.info(f"Near-dup filter removed {removed} jobs")
+    return unique, removed
+
+
+def _load_pg_hashes(sources: set[str]) -> dict[str, dict[str, str]]:
+    """
+    Load {source → {source_job_id → description_hash}} from PG.
+    Returns empty dict on failure so the pipeline degrades gracefully.
+    """
+    try:
+        from app.db.session import SessionLocal
+        from app.db import job_repository as repo
+        hashes: dict[str, dict[str, str]] = {}
+        with SessionLocal() as db:
+            for source in sources:
+                hashes[source] = repo.get_source_hashes(db, source)
+        return hashes
+    except Exception as e:
+        logger.warning(f"PG registry load failed (non-fatal): {e}")
+        return {}
+
+
+def _pg_upsert_batch(
+    jobs_to_embed: list[JobDocument],
+    jobs_to_touch: list[tuple[JobDocument, str]],
+) -> None:
+    """Upsert all processed jobs to the PG registry. Failures are non-fatal."""
+    try:
+        from app.db.session import SessionLocal
+        from app.db import job_repository as repo
+        with SessionLocal() as db:
+            for job in jobs_to_embed:
+                desc_hash = repo.compute_description_hash(job)
+                repo.upsert(db, job, desc_hash)
+            for job, desc_hash in jobs_to_touch:
+                repo.upsert(db, job, desc_hash)
+    except Exception as e:
+        logger.warning(f"PG registry upsert failed (non-fatal): {e}")
+
+
 def run_ingestion(
     query: str = "software engineer",
     location: str = "remote",
     limit: int = 50,
     ingestors: Optional[list[BaseIngestor]] = None,
 ) -> IngestionResult:
-    """
-    Run the full ingestion pipeline.
-
-    Args:
-        query:     job search query (e.g. "Python backend engineer")
-        location:  location filter (e.g. "remote", "London", "New York")
-        limit:     max jobs to fetch per source
-        ingestors: override list of ingestors (default: all available)
-
-    Returns:
-        IngestionResult summary.
-    """
     result = IngestionResult()
     all_ingestors = ingestors if ingestors is not None else _get_ingestors()
 
@@ -90,8 +135,7 @@ def run_ingestion(
         logger.warning("Ingestion aborted: no ingestors available")
         return result
 
-    # Step 0: Clean up expired jobs before fetching new ones.
-    # This keeps ChromaDB lean — no stale 2-month-old listings polluting results.
+    # Step 0: TTL cleanup
     try:
         from app.rag.cleanup import cleanup_old_jobs
         cleanup = cleanup_old_jobs(days=_TTL_DAYS)
@@ -101,63 +145,84 @@ def run_ingestion(
     except Exception as e:
         logger.warning(f"TTL cleanup failed (non-fatal): {e}")
 
-    raw_jobs_all: list[JobDocument] = []
+    normalised_jobs: list[JobDocument] = []
 
-    # Step 1: Fetch from all sources
+    # Steps 1 + 2: Fetch and normalise
     for ingestor in all_ingestors:
         try:
             logger.info(f"Fetching from {ingestor.source_name}...")
             raw = ingestor.fetch_jobs(query=query, location=location, limit=limit)
             result.total_fetched += len(raw)
             result.sources_used.append(ingestor.source_name)
-
-            # Step 2: Normalise
             for raw_job in raw:
                 job = normalise(raw_job)
                 if job:
-                    raw_jobs_all.append(job)
+                    normalised_jobs.append(job)
                     result.total_normalised += 1
-
         except Exception as e:
             msg = f"{ingestor.source_name} fetch error: {e}"
             logger.error(msg)
             result.errors.append(msg)
 
-    # Step 3: Deduplicate by ID
+    # Step 3: ID dedup — MD5(title|company|source)
     seen_ids: set[str] = set()
-    unique_jobs: list[JobDocument] = []
-    for job in raw_jobs_all:
+    id_unique: list[JobDocument] = []
+    for job in normalised_jobs:
         if job.id not in seen_ids:
             seen_ids.add(job.id)
-            unique_jobs.append(job)
-    result.total_deduplicated = result.total_normalised - len(unique_jobs)
+            id_unique.append(job)
+    result.total_deduplicated = result.total_normalised - len(id_unique)
 
-    # Step 4: Embed + store in ChromaDB
-    stored = embed_and_store_jobs(unique_jobs)
-    result.total_stored = stored
+    # Step 4: Near-dup filter (rapidfuzz)
+    unique_jobs, near_dups = _near_dup_filter(id_unique)
+    result.total_deduplicated += near_dups
 
-    # Step 5: Persist metadata to PostgreSQL (non-blocking)
-    _persist_metadata(unique_jobs[:stored])
+    # Step 5: PG registry check — classify jobs
+    sources = {j.source or "unknown" for j in unique_jobs}
+    pg_hashes = _load_pg_hashes(sources)
 
-    # Step 6: Invalidate search cache — new jobs are in ChromaDB,
-    # stale cached results would miss them.
+    from app.db import job_repository as repo
+
+    jobs_to_embed: list[JobDocument] = []
+    jobs_to_touch: list[tuple[JobDocument, str]] = []
+
+    for job in unique_jobs:
+        desc_hash = repo.compute_description_hash(job)
+        source = job.source or "unknown"
+        existing = pg_hashes.get(source, {})
+
+        if job.source_job_id and job.source_job_id in existing:
+            if existing[job.source_job_id] == desc_hash:
+                result.total_skipped += 1
+                jobs_to_touch.append((job, desc_hash))
+            else:
+                result.total_updated += 1
+                jobs_to_embed.append(job)
+        else:
+            jobs_to_embed.append(job)
+
+    # Step 6: Embed + store new/updated jobs
+    embedded = embed_and_store_jobs(jobs_to_embed)
+    result.total_stored = embedded
+
+    # Step 7: Upsert PG registry
+    _pg_upsert_batch(jobs_to_embed, jobs_to_touch)
+
+    # Step 8: Invalidate Redis search cache
     try:
         from app.core.redis_client import cache_delete_pattern
         deleted = cache_delete_pattern("search:*")
         if deleted:
-            logger.info(f"Search cache invalidated after ingestion: {deleted} keys cleared")
+            logger.info(f"Search cache invalidated: {deleted} keys cleared")
     except Exception as e:
         logger.debug(f"Cache invalidation skipped: {e}")
 
     logger.info(
         f"Ingestion complete — fetched={result.total_fetched}, "
         f"normalised={result.total_normalised}, "
-        f"deduped={result.total_deduplicated}, stored={result.total_stored}"
+        f"deduped={result.total_deduplicated}, "
+        f"skipped={result.total_skipped}, "
+        f"updated={result.total_updated}, "
+        f"stored={result.total_stored}"
     )
     return result
-
-
-def _persist_metadata(jobs: list[JobDocument]) -> None:
-    """Save job metadata to PostgreSQL. Failures are logged, not raised."""
-    # Phase 2: metadata logging only — full job table in Phase 3
-    logger.debug(f"Metadata persist: {len(jobs)} jobs (DB table in Phase 3)")

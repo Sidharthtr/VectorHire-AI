@@ -3,7 +3,9 @@ from typing import Optional
 
 
 class JobDocument(BaseModel):
-    id: str
+    id: str                          # MD5(title|company|source) — used as ChromaDB ID
+    source_job_id: Optional[str] = None  # original ID from the API (Adzuna ID, Arbeitnow slug)
+    source: Optional[str] = None     # "adzuna", "arbeitnow", "seed"
     title: str
     company: str
     location: str
@@ -49,5 +51,6 @@ class RankedJob(BaseModel):
 class JobSearchQuery(BaseModel):
     query: str
     top_k: int = 10
-    experience_level: Optional[str] = None
-    remote_only: bool = False
+    experience_level: Optional[str] = None   # "intern" | "entry" | "mid" | "senior"
+    remote_only: bool = False                 # true → only remote jobs
+    location: Optional[str] = None           # partial match on location field

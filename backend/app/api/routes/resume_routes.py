@@ -1,10 +1,26 @@
+"""
+Resume routes — upload + analyze.
+
+POST /resume/upload   — parse PDF, return extracted skills (no persistence)
+POST /resume/analyze  — full pipeline, persists Resume + ResumeAnalysis rows
+                        for the authenticated user
+"""
+from __future__ import annotations
+
+import hashlib
 import time
+from typing import Optional
+
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from app.api.dependencies import validate_pdf_upload
+from app.api.deps import get_current_user
+from app.db.session import get_db
+from app.db.models import User, Resume, ResumeAnalysis
 from app.graph.workflow import run_analysis_workflow
 from app.schemas.response_schema import AnalysisResponse, ResumeUploadResponse
 from app.core.logging import get_logger
-from typing import Optional
 
 router = APIRouter(prefix="/resume", tags=["Resume"])
 logger = get_logger(__name__)
@@ -14,6 +30,7 @@ logger = get_logger(__name__)
 async def upload_resume(
     file: UploadFile = File(...),
     _: UploadFile = Depends(validate_pdf_upload),
+    current_user: User = Depends(get_current_user),
 ):
     """Parse a resume PDF and return extracted skills and profile."""
     from app.services.resume_service import get_resume_service
@@ -39,35 +56,79 @@ async def analyze_resume(
     search_query: Optional[str] = None,
     top_k: int = 10,
     experience_filter: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """
-    Full pipeline: upload resume → parse → extract skills → retrieve jobs →
-    rank matches → generate explanations. Returns complete analysis.
+    Full pipeline: parse → extract skills → retrieve jobs → rank → explain.
+    Persists Resume (deduped by file hash per user) and ResumeAnalysis rows.
     """
     t_start = time.time()
     content = await file.read()
+    filename = file.filename or "resume.pdf"
+
+    # Upsert Resume — reuse if this user already uploaded the same file
+    file_hash = hashlib.sha256(content).hexdigest()
+    resume = (
+        db.query(Resume)
+        .filter(Resume.user_id == current_user.id, Resume.hash == file_hash)
+        .first()
+    )
+    if resume is None:
+        resume = Resume(
+            user_id=current_user.id,
+            filename=filename,
+            hash=file_hash,
+        )
+        db.add(resume)
+        db.flush()   # populate resume.id without committing
+        logger.info(f"New Resume row: {resume.id} for user {current_user.id}")
+    else:
+        logger.info(f"Reusing Resume row: {resume.id} (same hash)")
 
     try:
         final_state = await run_analysis_workflow(
             resume_bytes=content,
-            resume_filename=file.filename or "resume.pdf",
+            resume_filename=filename,
             search_query=search_query,
             top_k=top_k,
             experience_filter=experience_filter,
         )
 
-        elapsed_ms = (time.time() - t_start) * 1000
-        missing = final_state.get("top_missing_skills", [])
+        elapsed_ms = round((time.time() - t_start) * 1000, 1)
+        explained_jobs = final_state.get("explained_jobs", [])
 
-        return AnalysisResponse(
+        response = AnalysisResponse(
             success=True,
-            resume_id=final_state.get("resume_id", ""),
-            top_jobs=final_state.get("explained_jobs", []),
+            resume_id=resume.id,
+            top_jobs=explained_jobs,
             overall_match_summary=final_state.get("overall_summary", ""),
-            top_missing_skills=missing,
+            top_missing_skills=final_state.get("top_missing_skills", []),
             improvement_suggestions=final_state.get("improvement_suggestions", []),
-            processing_time_ms=round(elapsed_ms, 1),
+            processing_time_ms=elapsed_ms,
         )
+
+        top_match = max(
+            (j.match_percentage for j in explained_jobs), default=0.0
+        )
+        analysis = ResumeAnalysis(
+            resume_id=resume.id,
+            analysis_json=response.model_dump(),
+            top_match_pct=top_match,
+            processing_time_ms=elapsed_ms,
+        )
+        db.add(analysis)
+        db.commit()
+        db.refresh(analysis)
+        logger.info(
+            f"Saved ResumeAnalysis {analysis.id} (user={current_user.id}, "
+            f"top_match={top_match:.1f}%)"
+        )
+
+        response.analysis_id = analysis.id
+        return response
+
     except Exception as e:
+        db.rollback()
         logger.error(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))

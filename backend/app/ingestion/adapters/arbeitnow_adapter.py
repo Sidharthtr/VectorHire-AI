@@ -70,6 +70,7 @@ class ArbeitnowIngestor(BaseIngestor):
             tags = item.get("tags", [])  # Arbeitnow returns skill tags
 
             raw_jobs.append(RawJob(
+                source_job_id=item.get("slug", ""),
                 title=item.get("title", ""),
                 company=item.get("company_name", "Unknown"),
                 location=item.get("location", "Remote"),

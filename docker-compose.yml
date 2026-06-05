@@ -96,6 +96,7 @@ services:
       CHROMADB_PORT:         "8000"           # internal port inside Docker network
     volumes:
       - resume_uploads:/app/app/data/resumes  # persist uploaded PDFs
+      - hf_model_cache:/home/vectorhire/.cache/huggingface  # model persists across rebuilds
     ports:
       - "8000:8000"
     depends_on:
@@ -137,3 +138,4 @@ volumes:
   chroma_data:
   redis_data:
   resume_uploads:
+  hf_model_cache:    # HuggingFace model cache — survives container rebuilds

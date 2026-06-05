@@ -53,6 +53,7 @@ def hybrid_retrieve(
     query: str,
     top_k: int = DEFAULT_TOP_K,
     experience_level: Optional[str] = None,
+    remote_only: bool = False,
     mode: str = "hybrid",
 ) -> HybridResult:
     """
@@ -62,6 +63,7 @@ def hybrid_retrieve(
         query:            search query string
         top_k:            max results to return
         experience_level: optional filter ("entry", "mid", "senior", etc.)
+        remote_only:      if True, only return remote jobs
         mode:             "dense" | "sparse" | "hybrid"
 
     Returns:
@@ -71,11 +73,15 @@ def hybrid_retrieve(
     sparse_hits: list[tuple[JobDocument, float, int]] = []
 
     if mode in ("dense", "hybrid"):
-        dense_hits = dense_retrieve(query, top_k=top_k, experience_level=experience_level)
+        dense_hits = dense_retrieve(
+            query, top_k=top_k, experience_level=experience_level, remote_only=remote_only
+        )
         logger.debug(f"Dense: {len(dense_hits)} hits")
 
     if mode in ("sparse", "hybrid"):
-        sparse_hits = sparse_retrieve(query, top_k=top_k, experience_level=experience_level)
+        sparse_hits = sparse_retrieve(
+            query, top_k=top_k, experience_level=experience_level, remote_only=remote_only
+        )
         logger.debug(f"Sparse: {len(sparse_hits)} hits")
 
     # Build final ranked list
@@ -110,6 +116,7 @@ def retrieve_for_pipeline(
     query: str,
     top_k: int = DEFAULT_TOP_K,
     experience_level: Optional[str] = None,
+    remote_only: bool = False,
 ) -> list[tuple[JobDocument, float]]:
     """
     Convenience wrapper for LangGraph nodes — returns (JobDocument, similarity_score) pairs
@@ -118,5 +125,8 @@ def retrieve_for_pipeline(
     from app.core.settings import get_settings
     mode = get_settings().retrieval_mode
 
-    result = hybrid_retrieve(query, top_k=top_k, experience_level=experience_level, mode=mode)
+    result = hybrid_retrieve(
+        query, top_k=top_k, experience_level=experience_level,
+        remote_only=remote_only, mode=mode,
+    )
     return [(r.job, r.similarity) for r in result.results]

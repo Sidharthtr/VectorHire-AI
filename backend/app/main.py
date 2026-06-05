@@ -29,6 +29,8 @@ from app.api.routes import (
     debug_routes,
     evaluation_routes,
     ingestion_routes,
+    auth_routes,
+    analysis_routes,
 )
 
 
@@ -83,7 +85,9 @@ def create_app() -> FastAPI:
 
     prefix = settings.api_prefix
     app.include_router(health_routes.router,     prefix=prefix)
+    app.include_router(auth_routes.router,       prefix=prefix)
     app.include_router(resume_routes.router,     prefix=prefix)
+    app.include_router(analysis_routes.router,   prefix=prefix)
     app.include_router(search_routes.router,     prefix=prefix)
     app.include_router(debug_routes.router,      prefix=prefix)
     app.include_router(evaluation_routes.router, prefix=prefix)

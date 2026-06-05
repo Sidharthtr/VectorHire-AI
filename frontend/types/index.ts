@@ -68,11 +68,30 @@ export interface RankedJob {
 export interface AnalysisResponse {
   success: boolean;
   resume_id: string;
+  analysis_id?: string;
   top_jobs: RankedJob[];
   overall_match_summary: string;
   top_missing_skills: string[];
   improvement_suggestions: string[];
   processing_time_ms?: number;
+}
+
+export interface AnalysisSummary {
+  id: string;
+  resume_name: string;
+  top_match_pct: number | null;
+  job_count: number;
+  created_at: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
 }
 
 export interface JobSearchResponse {
@@ -94,4 +113,13 @@ export interface HealthResponse {
   status: string;
   version: string;
   services: Record<string, boolean>;
+}
+
+export type ChatRole = "user" | "assistant";
+
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  created_at: string;
 }

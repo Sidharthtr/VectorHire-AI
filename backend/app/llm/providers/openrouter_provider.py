@@ -119,3 +119,56 @@ def generate(prompt: str, temperature: float | None = None, max_tokens: int | No
 def generate_structured(prompt: str, temperature: float = 0.1) -> str:
     """Lower temperature for structured JSON output."""
     return generate(prompt, temperature=temperature)
+
+
+def stream(
+    messages: list[dict],
+    temperature: float | None = None,
+    max_tokens: int | None = None,
+):
+    """Yield content tokens from the first model that responds.
+
+    Skips Redis cache (chat is conversational, not deterministic) and the
+    circuit breaker (one user message must not be blocked by an earlier batch
+    failure). Falls back through the same model chain as generate().
+    """
+    client = _get_client()
+    settings = get_settings()
+    temp = temperature if temperature is not None else settings.llm_temperature
+    tokens = max_tokens if max_tokens is not None else settings.llm_max_tokens
+
+    models = [settings.llm_model, settings.llm_fallback_model] + _FALLBACK_CHAIN
+    last_error: Exception | None = None
+
+    for model in models:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temp,
+                max_tokens=tokens,
+                stream=True,
+            )
+            if model != settings.llm_model:
+                logger.info(f"Stream using fallback model: {model}")
+            for chunk in response:
+                if not chunk.choices:
+                    continue
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    yield delta
+            return
+        except RateLimitError:
+            logger.warning(f"Model {model} rate-limited (stream), skipping")
+            last_error = Exception(f"{model} rate-limited")
+        except APIStatusError as e:
+            logger.warning(f"Model {model} stream error ({e.status_code}), skipping")
+            last_error = e
+        except httpx.TimeoutException:
+            logger.warning(f"Model {model} stream timed out, skipping")
+            last_error = Exception(f"{model} timeout")
+        except Exception as e:
+            logger.warning(f"Model {model} stream failed: {e}")
+            last_error = e
+
+    raise RuntimeError(f"All LLM models failed (stream). Last error: {last_error}")

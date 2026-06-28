@@ -1,8 +1,24 @@
 "use client";
+/**
+ * Single job result card — shows the job header, match % and an expandable detail panel.
+ *
+ * What it does:
+ * - Renders title/company/location, remote pill, experience pill, and salary range
+ * - Highlights skills the user already has (green) vs. the rest (gray)
+ * - Expands to show the LLM explanation, SkillGap component, and full description
+ *
+ * Upstream (who imports this OR which URL renders it): @/components/jobs/JobList
+ * Downstream (what this imports): @/lib/utils formatters, @/types RankedJob, ./SkillGap
+ */
+// useState — local "expanded" toggle for the details section
 import { useState } from "react";
+// lucide-react icons — location/company pills, expand chevrons, and Wifi for "Remote"
 import { MapPin, Building2, ChevronDown, ChevronUp, Wifi } from "lucide-react";
+// utils — cn (class merge), formatMatchPercentage (display %), getMatchColor (red/yellow/green), capitalize
 import { cn, formatMatchPercentage, getMatchColor, capitalize } from "@/lib/utils";
+// RankedJob — the job + match metadata shape produced by the LangGraph ranker
 import type { RankedJob } from "@/types";
+// SkillGap — renders matched-vs-missing skill chips inside the expanded detail panel
 import SkillGap from "./SkillGap";
 
 interface JobCardProps {

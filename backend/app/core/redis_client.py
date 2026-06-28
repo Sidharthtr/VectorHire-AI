@@ -1,34 +1,38 @@
 """
-Redis client — shared connection pool with graceful fallback.
+Shared Redis connection pool + JSON cache helpers with graceful fallback.
 
-All caching in VectorHire AI goes through this module.
-If Redis is not configured (REDIS_URL="") or unreachable, every cache
-operation silently returns None / does nothing — the app continues working,
-just without caching. This means Redis is always optional.
+What it does:
+- Lazily opens one pooled Redis connection (get_redis) and caches the result.
+- cache_get / cache_set / cache_delete / cache_delete_pattern wrap key access with a
+  "vectorhire:" prefix and silently no-op if Redis is unreachable or REDIS_URL="".
+- make_hash builds short stable cache-key components from arbitrary strings.
 
-Usage:
-    from app.core.redis_client import get_redis, cache_get, cache_set
-
-    # Store a value
-    cache_set("my_key", {"result": 42}, ttl=3600)
-
-    # Read it back (returns None on miss or Redis down)
-    value = cache_get("my_key")
-
-Keys are automatically prefixed with "vectorhire:" to avoid collisions
-if this Redis instance is shared with other apps.
+Upstream (who imports this): app.llm.gateway, app.llm.chains,
+app.llm.providers.openrouter_provider, app.resume.parser, app.resume.extractor,
+app.ingestion.* (pipeline, embedder, normalizer, adapters), app.graph.nodes.*,
+app.rag.* (retrievers, embeddings, vectordb, cleanup), app.api.routes (search, debug,
+ingestion, analysis), app.db.job_repository, app.db.init_db.
+Downstream (what this imports): redis-py, json, hashlib, app.core.settings, app.core.logging.
 """
 from __future__ import annotations
 
+# json: serialise/deserialise cached values (dict → bytes → dict)
 import json
+# hashlib: SHA-256 in make_hash() to derive short cache-key suffixes
 import hashlib
+# Any/Optional: cache_get returns Any|None — values are arbitrary JSON-encodable objects
 from typing import Any, Optional
 
+# redis_lib: only used for .from_url() factory; renamed to avoid shadowing the Redis type
 import redis as redis_lib
+# Redis: type annotation for the module-level `_redis` singleton
 from redis import Redis
+# RedisError: swallowed in every cache op so caching failures never break the request path
 from redis.exceptions import RedisError
 
+# get_settings: needs settings.redis_url to know if Redis is enabled + where to connect
 from app.core.settings import get_settings
+# get_logger: emit warnings on connect failure + debug logs on per-op errors
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,13 +1,19 @@
 """
-LangGraph Node 4 — Rank Jobs.
+Workflow step 4/5 — score and sort the retrieved jobs.
 
-Takes retrieved (JobDocument, score) pairs and produces sorted RankedJob list.
+What it does:
+- Reads state keys: retrieved_jobs, parsed_resume.
+- Writes state keys: ranked_jobs (sorted RankedJob list), processing_steps (and errors on failure).
+- Delegates the weighted scoring (semantic 0.5 + skill overlap 0.3 + keyword 0.2) to RankingService. No LLM calls here.
 
-Phase 2 change: passes resume raw_text to ranking_service so the keyword
-signal (20% weight) has text to match against, not just skills list.
+Upstream (who imports this): app/graph/builder.py
+Downstream (what this imports): WorkflowState, RankingService, logging
 """
+# WorkflowState: typed access to retrieved_jobs/parsed_resume in / ranked_jobs out
 from app.graph.state import WorkflowState
+# RankingService: pure-Python scorer (no network) that combines the 3 ranking signals
 from app.services.ranking_service import RankingService
+# get_logger: trace how many jobs were ranked or whether the node was skipped
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

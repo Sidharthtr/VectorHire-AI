@@ -1,23 +1,22 @@
 """
-Ragas-based RAG evaluation.
+Ragas-style retrieval evaluation with a graceful LLM-only fallback.
 
-Ragas (https://docs.ragas.io) measures how good your RAG pipeline is at:
-  - Faithfulness:       does the answer stick to what the retrieved context says?
-  - Context Precision:  are the retrieved chunks actually relevant to the query?
-  - Context Recall:     did retrieval find everything needed to answer the query?
+What it does:
+- evaluate_with_ragas(): scores faithfulness, context_precision, context_recall in [0, 1]
+- Uses real ragas library if installed, otherwise falls back to LLM judge prompts
+- Returns a RagasMetrics dataclass consumed by EvaluationService
 
-We use a graceful-fallback design:
-  - If the `ragas` library is installed, use it properly.
-  - If not installed, fall back to an LLM-based approximation so the app
-    still works without heavy optional dependencies.
-
-Install properly with: pip install ragas
+Upstream (who imports this): app/evaluation/evaluation_service.py
+Downstream (what this imports): dataclasses, app.core.logging; (lazy) ragas/datasets, app.llm.gateway, app.utils.json_utils
 """
 from __future__ import annotations
 
+# dataclass: lightweight, typed RagasMetrics return container
 from dataclasses import dataclass
+# Optional: ground_truth is optional (needed for context_recall only)
 from typing import Optional
 
+# get_logger: log fallback transitions and evaluator errors
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

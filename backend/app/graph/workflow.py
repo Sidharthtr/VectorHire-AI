@@ -1,8 +1,25 @@
+"""
+Public entry point for running the LangGraph analysis pipeline.
+
+What it does:
+- Lazily compiles the StateGraph once and caches it (compilation is expensive).
+- Seeds the initial WorkflowState from API input and ainvokes the graph.
+- Logs processing_steps and any per-node errors collected during the run.
+
+Upstream (who imports this): app/api/routes/resume_routes.py (and anything that runs the full analysis)
+Downstream (what this imports): langgraph, builder.build_workflow, WorkflowState, constants, logging
+"""
+# StateGraph: type-only reference here; the actual graph comes from build_workflow()
 from langgraph.graph import StateGraph
+# build_workflow: factory that wires nodes + edges into a fresh StateGraph
 from app.graph.builder import build_workflow
+# WorkflowState: type of the initial dict we hand to the graph and the dict it returns
 from app.graph.state import WorkflowState
+# WORKFLOW_RECURSION_LIMIT: safety cap to stop runaway loops if a node ever cycles
 from app.core.constants import WORKFLOW_RECURSION_LIMIT
+# get_logger: project-wide structured logger so workflow runs show up in app logs
 from app.core.logging import get_logger
+# Optional: search_query / experience_filter are nullable API inputs
 from typing import Optional
 
 logger = get_logger(__name__)

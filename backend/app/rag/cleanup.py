@@ -1,30 +1,28 @@
 """
-ChromaDB TTL cleanup — removes job postings older than N days.
+ChromaDB TTL cleanup — drops jobs older than N days and invalidates BM25.
 
-Why we need this:
-  - Jobs ingested via Arbeitnow/Adzuna accumulate over time.
-  - A job posted 2 months ago is almost certainly filled or expired.
-  - Keeping stale jobs wastes vector space and pollutes search results
-    (candidate matches a job that no longer exists).
+What it does:
+- Uses Chroma's `$lt` numeric filter on `ingested_at` metadata to find expired jobs,
+  deletes them, and calls reset_sparse_index() so BM25 rebuilds on the next query.
+- Sits OUTSIDE the query path — invoked by the ingestion pipeline (and could be
+  scheduled) so stale postings don't pollute retrieval results.
+- Seeded/static jobs lack `ingested_at` and are intentionally preserved.
 
-How it works:
-  - Every job stored via job_embedder.py has an `ingested_at` Unix timestamp
-    in its ChromaDB metadata.
-  - ChromaDB supports numeric `$lt` (less-than) filters on metadata.
-  - We query for all jobs where ingested_at < cutoff, get their IDs, delete them.
-
-Jobs without `ingested_at` (e.g. seeded static jobs from seed_vectordb.py)
-are intentionally kept — they're your demo/baseline data.
-
-Default TTL: 30 days. Override with the `days` parameter.
+Upstream (who imports this): app/ingestion/job_pipeline.py
+Downstream (what this imports): app.rag.vectordb, app.rag.sparse_retriever
 """
 from __future__ import annotations
 
+# time: produce the unix-epoch cutoff used in the $lt metadata filter
 import time
+# dataclass: typed return value (CleanupResult) reporting deleted / kept counts
 from dataclasses import dataclass
 
+# get_jobs_collection: target collection we query and delete from
 from app.rag.vectordb import get_jobs_collection
+# reset_sparse_index: BM25 corpus is now stale post-delete — force a rebuild
 from app.rag.sparse_retriever import reset_sparse_index
+# get_logger: reports how many jobs were removed each run
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,27 +1,26 @@
 """
-VectorHire AI — FastAPI application entry point.
+VectorHire AI FastAPI entry point — wires settings, DB, Redis, CORS, and routes.
 
-Startup sequence:
-1. init_db()             — create DB tables (or run Alembic in Docker via CMD)
-2. Redis ping            — confirm cache is reachable (non-fatal if absent)
-3. get_embedding_model() — warm up sentence-transformers on first worker start
+What it does:
+- Boot sequence: load Settings -> run init_db() -> ping Redis -> register routers -> apply CORS
+- lifespan() handles startup/shutdown hooks (DB tables, Redis health, embedding warm-up notes)
+- create_app() composes the FastAPI instance and mounts every /api/v1 router
+- Module-level `app` is what uvicorn imports (uvicorn app.main:app)
 
-Routes:
-  /api/v1/health            — liveness + service status
-  /api/v1/resume/upload     — PDF upload
-  /api/v1/resume/analyze    — full pipeline (parse → match → explain)
-  /api/v1/search/jobs       — job search by query
-  /api/v1/debug/retrieval   — compare dense vs sparse vs hybrid
-  /api/v1/debug/db          — DB connectivity check
-  /api/v1/evaluate          — RAG quality metrics
-  /api/v1/evaluate/history  — past evaluation results
-  /api/v1/ingest            — trigger job ingestion from external APIs
+Upstream (who imports this): uvicorn / ASGI runner (entry binary)
+Downstream (what this imports): fastapi, app.core.{settings,logging}, app.api.routes.*, app.db.init_db, app.core.redis_client
 """
+# FastAPI: the ASGI app class we configure and expose as `app`
 from fastapi import FastAPI
+# CORSMiddleware: allow the frontend (different origin) to call this API
 from fastapi.middleware.cors import CORSMiddleware
+# asynccontextmanager: builds the lifespan handler for startup/shutdown hooks
 from contextlib import asynccontextmanager
+# get_settings: cached Settings (env vars, CORS origins, API prefix, app name/version)
 from app.core.settings import get_settings
+# logger: shared structured logger for startup/shutdown diagnostics
 from app.core.logging import logger
+# Route modules: each exposes a `router` mounted under settings.api_prefix
 from app.api.routes import (
     health_routes,
     resume_routes,

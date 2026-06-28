@@ -1,4 +1,16 @@
 "use client";
+/**
+ * Stepper UI — visualizes the upload/analysis status received from useAnalysis.
+ *
+ * What it does:
+ * - Hides itself when status is "idle"; otherwise shows a 3-step checklist
+ * - Picks the right icon per step (spinning, checked, or unchecked outline)
+ * - Renders a red error message when status === "error"
+ *
+ * Upstream (who imports this OR which URL renders it): app/(app)/upload/page.tsx
+ * Downstream (what this imports): lucide-react icons only (pure presentational)
+ */
+// lucide-react icons — Loader2 for in-progress spin, CheckCircle2 for done, XCircle for error
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 type Status = "idle" | "uploading" | "analyzing" | "done" | "error";

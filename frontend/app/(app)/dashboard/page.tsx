@@ -1,7 +1,22 @@
 "use client";
+/**
+ * Standalone job-search dashboard — semantic search over the vector DB (no resume).
+ *
+ * What it does:
+ * - Lets the user type a free-text query plus pick experience level + topK
+ * - Offers SAMPLE_QUERIES pills as one-click search starters
+ * - Delegates the actual /search call and loading/error/jobs state to useJobSearch
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: /dashboard (linked from the Sidebar)
+ * Downstream (what this imports): lucide-react icons, @/hooks/useJobSearch, @/components/jobs/JobList
+ */
+// useState — local form state: query text, selected experience filter, and topK count
 import { useState } from "react";
+// Search/Filter icons — decorate the search input and the experience-level dropdown
 import { Search, Filter } from "lucide-react";
+// useJobSearch — encapsulates the POST /jobs/search request plus loading/error/jobs state
 import { useJobSearch } from "@/hooks/useJobSearch";
+// JobList — renders the ranked job results (delegates each row to JobCard)
 import JobList from "@/components/jobs/JobList";
 
 const SAMPLE_QUERIES = [

@@ -1,7 +1,17 @@
-// ============================================================
-// Shared TypeScript types matching backend Pydantic schemas
-// ============================================================
+/**
+ * Shared TypeScript types mirroring backend Pydantic schemas.
+ *
+ * What it does:
+ * - Declares the request/response shapes used by lib/api.ts and every UI component
+ * - Keeps a single source of truth so backend/frontend stay in sync
+ *
+ * Upstream (who imports this): lib/api.ts, contexts/AuthContext.tsx, HistoryContext.tsx,
+ *   hooks/useAnalysis.ts, hooks/useJobSearch.ts, components/results/*, components/jobs/*,
+ *   components/chat/ChatPanel.tsx, app/(app)/analysis/[id]/page.tsx
+ * Downstream (what this imports): none — pure type declarations
+ */
 
+// Resume parsing types — sub-structures returned by the resume parser
 export interface Education {
   institution: string;
   degree: string;
@@ -41,6 +51,7 @@ export interface ParsedResume {
   experience_level?: string;
 }
 
+// Job types — job postings and ranked match results
 export interface JobDocument {
   id: string;
   title: string;
@@ -65,6 +76,7 @@ export interface RankedJob {
   explanation?: string;
 }
 
+// Analysis types — payloads from /resume/analyze and /analysis/history
 export interface AnalysisResponse {
   success: boolean;
   resume_id: string;
@@ -84,6 +96,7 @@ export interface AnalysisSummary {
   created_at: string;
 }
 
+// Auth types — current user and JWT response
 export interface User {
   id: string;
   email: string;
@@ -94,6 +107,7 @@ export interface AuthResponse {
   token_type: string;
 }
 
+// Search types — standalone job search payload
 export interface JobSearchResponse {
   success: boolean;
   query: string;
@@ -102,6 +116,7 @@ export interface JobSearchResponse {
   processing_time_ms?: number;
 }
 
+// Resume upload type — payload from /resume/upload
 export interface ResumeUploadResponse {
   success: boolean;
   message: string;
@@ -109,12 +124,14 @@ export interface ResumeUploadResponse {
   parsed_resume?: ParsedResume;
 }
 
+// System types — backend /health probe response
 export interface HealthResponse {
   status: string;
   version: string;
   services: Record<string, boolean>;
 }
 
+// Chat types — streaming chat roles and persisted messages
 export type ChatRole = "user" | "assistant";
 
 export interface ChatMessage {

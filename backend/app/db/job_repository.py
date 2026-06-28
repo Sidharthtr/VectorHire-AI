@@ -1,21 +1,35 @@
 """
-Job registry repository — PostgreSQL persistence for ingested jobs.
+Job registry repository — read/write helpers for the `jobs` table.
 
-Tracks every job seen by the pipeline with:
-- description_hash to detect content changes (skip re-embed if unchanged)
-- first_seen_at / last_seen_at timestamps
-- source + source_job_id for incremental fetch dedup
+What it does:
+- compute_description_hash builds an SHA-256 over title|company|description so the
+  ingestion pipeline can skip re-embedding unchanged jobs.
+- get_source_hashes returns existing hashes for incremental dedup per source.
+- upsert inserts a new job or refreshes last_seen_at; returns (is_new, changed).
+- get_stats powers the admin endpoint with per-source counts.
+
+Upstream (who imports this): app.ingestion.job_pipeline (every ingestion run),
+app.api.routes.ingestion_routes (admin stats endpoint).
+Downstream (what this imports): hashlib, datetime, sqlalchemy.func, Session,
+app.db.models.Job, app.schemas.job_schema.JobDocument, app.core.logging.
 """
 from __future__ import annotations
 
+# hashlib: SHA-256 over job content so we can detect description changes
 import hashlib
+# datetime: stamp first_seen_at / last_seen_at when upserting
 from datetime import datetime
 
+# func: SQL aggregate (count) used inside get_stats
 from sqlalchemy import func
+# Session: type hint for the SQLAlchemy session passed in by route/service callers
 from sqlalchemy.orm import Session
 
+# Job: the ORM model this repository reads/writes
 from app.db.models import Job
+# JobDocument: incoming Pydantic payload from the ingestion pipeline before persisting
 from app.schemas.job_schema import JobDocument
+# get_logger: module-level logger for upsert + dedup telemetry
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

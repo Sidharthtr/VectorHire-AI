@@ -1,4 +1,21 @@
+"""
+Pydantic models for jobs, ranked matches, and search queries.
+
+What it does:
+- JobDocument: canonical job payload (stored in Postgres + ChromaDB).
+- ScoreBreakdown: transparent 3-signal score (semantic / skill overlap / keyword).
+- RankedJob: a JobDocument plus its match score + explanation for the UI.
+- JobSearchQuery: request body for the /search endpoint with filters.
+
+Upstream (who imports this): app.ingestion.* (job_embedder, job_pipeline, normalizer),
+app.graph.state, app.rag.* (all retrievers + rrf), app.schemas.response_schema,
+app.db.job_repository, app.api.routes.search_routes, app.services (explanation,
+retrieval, ranking, ingestion).
+Downstream (what this imports): pydantic (BaseModel, Field), typing.Optional.
+"""
+# BaseModel/Field: define typed payloads + default_factory for list fields
 from pydantic import BaseModel, Field
+# Optional: many job fields (salary_range, source, source_job_id) are nullable
 from typing import Optional
 
 

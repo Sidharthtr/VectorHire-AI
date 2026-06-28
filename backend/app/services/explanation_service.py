@@ -1,8 +1,26 @@
+"""
+Generate user-facing explanations, suggestions, and an overall summary for ranked jobs.
+
+What it does:
+- Runs the per-job explanation LLM chain in parallel (ThreadPoolExecutor, 3 workers) for the top N jobs.
+- Counts missing skills across all ranked jobs to surface the user's biggest gaps.
+- Calls the suggestions + overall summary chains to produce the final coaching output.
+- Degrades gracefully: a failed per-job explanation falls back to a templated string.
+
+Upstream (who imports this): app/graph/nodes/explain_match_node.py
+Downstream (what this imports): concurrent.futures, RankedJob/ParsedResume schemas, three LLM chains, logging, Counter
+"""
+# ThreadPoolExecutor + as_completed: run the per-job LLM explanation calls in parallel (~3x faster than sequential)
 from concurrent.futures import ThreadPoolExecutor, as_completed
+# RankedJob: input list, also the output type (we model_copy to attach explanation strings)
 from app.schemas.job_schema import RankedJob
+# ParsedResume: candidate context passed into every explanation prompt
 from app.schemas.resume_schema import ParsedResume
+# The 3 LLM chains used by this service: per-job explanation, improvement suggestions, overall summary
 from app.llm.chains import run_explanation_chain, run_suggestions_chain, run_overall_summary_chain
+# get_logger: log per-job explanation failures so we can debug prompt drift
 from app.core.logging import get_logger
+# Counter: aggregate missing-skill counts across all ranked jobs to find the most common gaps
 from collections import Counter
 
 logger = get_logger(__name__)

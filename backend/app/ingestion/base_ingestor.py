@@ -1,27 +1,22 @@
 """
-Base ingestor interface.
+Abstract base class that every job source adapter must subclass.
 
-Every job source (Adzuna, Arbeitnow, LinkedIn, etc.) implements this
-abstract class. This gives us a plug-and-play design:
+What it does:
+- Defines the BaseIngestor contract (source_name, fetch_jobs, is_available)
+- Enables plug-and-play: pipeline iterates all registered ingestors uniformly
+- Adapter step in the data flow: adapter (fetch raw) -> normalizer -> embedder -> pipeline
 
-    class AdzunaIngestor(BaseIngestor):
-        def fetch_jobs(self, query, location, limit):
-            ...  # call Adzuna API
-
-    class ArbeitnowIngestor(BaseIngestor):
-        def fetch_jobs(self, query, location, limit):
-            ...  # call Arbeitnow API
-
-The pipeline (job_pipeline.py) iterates over all registered ingestors,
-calls fetch_jobs() on each, normalises, deduplicates, embeds, and stores.
-
-Adding a new source = implementing fetch_jobs() + registering in ALL_INGESTORS.
+Upstream (who imports this): app/ingestion/job_pipeline.py, adapters/adzuna_adapter.py, adapters/arbeitnow_adapter.py
+Downstream (what this imports): abc (ABC interface), app.ingestion.job_normalizer (RawJob type)
 """
 from __future__ import annotations
 
+# ABC + abstractmethod: enforce that subclasses implement fetch_jobs at class definition time
 from abc import ABC, abstractmethod
+# Optional: kept for type-hint compatibility in subclasses extending this interface
 from typing import Optional
 
+# RawJob: the common TypedDict every adapter must return from fetch_jobs
 from app.ingestion.job_normalizer import RawJob
 
 

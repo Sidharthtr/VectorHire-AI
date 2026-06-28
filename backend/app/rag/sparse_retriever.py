@@ -1,28 +1,34 @@
 """
-Sparse (keyword) retriever using BM25.
+Sparse (keyword) retriever — BM25 half of the hybrid RAG pipeline.
 
-BM25 is the gold standard for lexical search — it rewards term frequency
-while penalizing very common words. Combined with ChromaDB's dense search,
-it catches jobs that use exact skill keywords the embeddings might miss.
+What it does:
+- Lazily loads every job from ChromaDB, tokenises descriptions, and builds an in-memory
+  BM25Okapi index that scores queries by classic lexical match (TF, IDF, length norm).
+- Sits parallel to dense_retriever; hybrid_retriever calls both and fuses with RRF.
+- Index is invalidated via reset_sparse_index() after ingestion / cleanup so new jobs
+  show up on the next query.
 
-How it works:
-1. On first call, all job descriptions are loaded from ChromaDB.
-2. A BM25 index is built over tokenised descriptions (lowercase words).
-3. Each query is tokenised the same way and scored against the index.
-4. Returns ranked (JobDocument, bm25_score_normalised, rank) triples.
-
-The index is rebuilt when reset_sparse_index() is called, e.g. after ingestion.
+Upstream (who imports this): app/rag/hybrid_retriever.py, app/rag/cleanup.py,
+    app/ingestion/job_embedder.py
+Downstream (what this imports): rank_bm25, app.rag.vectordb, app.schemas.job_schema
 """
 from __future__ import annotations
 
+# re: regex-based tokeniser — strips punctuation before BM25 sees the text
 import re
+# Optional: type hint for the optional experience_level filter argument
 from typing import Optional
 
+# BM25Okapi: the actual sparse scoring algorithm (Okapi BM25 variant)
 from rank_bm25 import BM25Okapi
 
+# get_jobs_collection: source of the BM25 corpus — we materialise all jobs from Chroma
 from app.rag.vectordb import get_jobs_collection
+# JobDocument: typed shape returned alongside each BM25 score
 from app.schemas.job_schema import JobDocument
+# DEFAULT_TOP_K: shared result-size default with the dense side
 from app.core.constants import DEFAULT_TOP_K
+# get_logger: logs index (re)build events and corpus size
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

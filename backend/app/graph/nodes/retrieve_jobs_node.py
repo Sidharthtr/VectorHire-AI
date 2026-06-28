@@ -1,6 +1,21 @@
+"""
+Workflow step 3/5 — fetch candidate jobs via hybrid (semantic + BM25) retrieval.
+
+What it does:
+- Reads state keys: parsed_resume, search_query, top_k, experience_filter.
+- Writes state keys: retrieved_jobs (list of (JobDocument, score)), processing_steps (and errors on failure).
+- Builds a rich query from resume skills + summary + the user's optional search query before searching.
+
+Upstream (who imports this): app/graph/builder.py
+Downstream (what this imports): WorkflowState, RetrievalService, DEFAULT_TOP_K, logging
+"""
+# WorkflowState: typed access to parsed_resume in / retrieved_jobs out
 from app.graph.state import WorkflowState
+# RetrievalService: thin facade over the hybrid retriever with Redis search caching
 from app.services.retrieval_service import RetrievalService
+# DEFAULT_TOP_K: fallback page size when caller didn't specify top_k
 from app.core.constants import DEFAULT_TOP_K
+# get_logger: log query and candidate count for debugging retrieval quality
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

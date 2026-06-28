@@ -1,3 +1,15 @@
+/**
+ * Two-column skill comparison — "You Have" vs "You Need" for a single job.
+ *
+ * What it does:
+ * - Renders matched skills as green chips and missing skills as red chips
+ * - Shows counts in each section header for quick scanning
+ * - Falls back to a gray placeholder when either array is empty
+ *
+ * Upstream (who imports this OR which URL renders it): components/jobs/JobCard.tsx (inside the expanded panel)
+ * Downstream (what this imports): lucide-react icons only (purely presentational)
+ */
+// CheckCircle2 / XCircle — green check next to "You Have", red X next to "You Need"
 import { CheckCircle2, XCircle } from "lucide-react";
 
 interface SkillGapProps {

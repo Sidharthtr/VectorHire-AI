@@ -1,3 +1,18 @@
+"""
+Hard-coded constants shared across layers (paths, ChromaDB names, retrieval limits).
+
+What it does:
+- Resolves BASE_DIR / DATA_DIR / CHROMA_DIR so file storage works regardless of CWD.
+- Names the two ChromaDB collections (jobs + resumes) used everywhere.
+- Holds non-tunable numbers: embedding dim, chunk size, top-k caps, file-size limit.
+
+Upstream (who imports this): app.rag.* (vectordb, embeddings, chunking, retrievers),
+app.graph.builder, app.graph.workflow, app.graph.nodes.retrieve_jobs_node,
+app.utils.file_utils, app.api.dependencies, app.api.routes.debug_routes,
+app.services.resume_service, app.services.retrieval_service.
+Downstream (what this imports): pathlib.Path only — zero runtime dependencies.
+"""
+# Path: build absolute filesystem paths anchored at the backend/app package
 from pathlib import Path
 
 # Paths

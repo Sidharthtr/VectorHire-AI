@@ -1,28 +1,43 @@
 """
-Resume service — handles PDF upload, parsing, LLM extraction, and caching.
+Resume upload + LLM extraction + multi-tier cache (Redis -> JSON file -> LLM).
 
-Cache hierarchy (fastest → slowest):
-  1. Redis  (distributed, survives restarts, TTL=7 days)
-  2. JSON file  (local fallback when Redis not configured)
-  3. LLM extraction  (only runs on genuine cache miss)
+What it does:
+- Hashes uploaded PDF bytes (SHA-256) and uses that as a stable cache key.
+- On hit returns the cached ParsedResume; on miss runs LLM extraction with a heuristic fallback.
+- Persists every processed PDF to disk under RESUMES_DIR for audit/debug.
+- Same PDF -> same ParsedResume, deterministic for testing and idempotent for re-uploads.
 
-Same PDF (same SHA-256 hash) → always returns the same ParsedResume.
+Upstream (who imports this): app/graph/nodes/extract_skills_node.py, app/api/routes/resume_routes.py
+Downstream (what this imports): resume parser+extractor, chains.run_skill_extraction_chain, ParsedResume schemas, constants, redis_client, settings
 """
 from __future__ import annotations
 
+# uuid: generates the resume_id returned to the API caller (independent of cache key)
 import uuid
+# hashlib: SHA-256 of file bytes is the cache key — same PDF always hits the same slot
 import hashlib
+# json: persists the JSON-file fallback cache when Redis isn't configured
 import json
+# datetime: timestamp stored alongside each cached entry for debugging cache age
 from datetime import datetime
+# Path: typing for the on-disk cache file path passed in from constants
 from pathlib import Path
 
+# parse_pdf_bytes: PDF -> text via pdfplumber, run only on a true cache miss
 from app.resume.parser import parse_pdf_bytes
+# basic_extract: regex/heuristic fallback when the LLM extraction chain fails
 from app.resume.extractor import basic_extract
+# run_skill_extraction_chain: builds the EXTRACT_SKILLS_PROMPT, calls LLM, parses JSON
 from app.llm.chains import run_skill_extraction_chain
+# Pydantic models we hydrate from the LLM dict so downstream code gets typed objects
 from app.schemas.resume_schema import ParsedResume, Education, WorkExperience, Project
+# RESUMES_DIR: where raw PDFs are persisted; DATA_DIR: where the JSON cache file lives
 from app.core.constants import RESUMES_DIR, DATA_DIR
+# get_logger: log cache hits/misses and LLM extraction failures
 from app.core.logging import get_logger
+# Redis primitives — cache_get/cache_set persist the ParsedResume across restarts
 from app.core.redis_client import cache_get, cache_set, make_hash
+# get_settings: read redis_url + TTLs so we can short-circuit Redis when not configured
 from app.core.settings import get_settings
 
 logger = get_logger(__name__)

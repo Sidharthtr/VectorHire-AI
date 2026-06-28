@@ -1,27 +1,48 @@
 """
-Analysis history + follow-up chat routes.
+Analysis history + per-analysis follow-up chat.
 
-GET  /analysis/history             — list all analyses for the current user
-GET  /analysis/{id}                — retrieve a specific saved analysis
-GET  /analysis/{id}/messages       — load chat history for an analysis
-POST /analysis/{id}/chat           — streaming chat (plain-text), persists turns
+What it does:
+- GET  /analysis/history           — list saved analyses for the current user
+- GET  /analysis/{id}              — fetch one saved analysis (owner-checked)
+- GET  /analysis/{id}/messages     — chat history for a given analysis
+- POST /analysis/{id}/chat         — streaming chat reply; persists both turns
+
+Upstream (who imports this): main.py mounts router under /api/v1 -> public
+paths /api/v1/analysis/*. Frontend history page + chat sidebar call these.
+Downstream (what this imports): db.models for ORM rows, services.chat_service
+for the LLM streaming generator, response/chat schemas for typed payloads,
+api.deps.get_current_user for ownership enforcement.
 """
 from __future__ import annotations
 
+# datetime: response field type for created_at in AnalysisSummary
 from datetime import datetime
+# Optional: nullable top_match_pct in the summary schema
 from typing import Optional
 
+# APIRouter+Depends+HTTPException: route group, DI, and typed 404/500 errors
 from fastapi import APIRouter, Depends, HTTPException
+# StreamingResponse: streams the LLM reply token-by-token over HTTP for /chat
 from fastapi.responses import StreamingResponse
+# BaseModel: declares the AnalysisSummary response schema
 from pydantic import BaseModel
+# Session: type hint for the DB session injected via Depends(get_db)
 from sqlalchemy.orm import Session
 
+# SessionLocal: opens a fresh session inside the streaming generator (request session is already closed)
+# get_db: normal request-scoped session for the read endpoints
 from app.db.session import SessionLocal, get_db
+# ORM models touched here: User (owner), Resume (join target), ResumeAnalysis (history rows), ChatMessage (chat turns)
 from app.db.models import User, Resume, ResumeAnalysis, ChatMessage
+# get_current_user: every analysis route is gated by JWT auth
 from app.api.deps import get_current_user
+# AnalysisResponse: schema returned by GET /analysis/{id} (rehydrated from analysis_json blob)
 from app.schemas.response_schema import AnalysisResponse
+# ChatMessageOut + ChatRequest: response/request shapes for the chat endpoints
 from app.schemas.chat_schema import ChatMessageOut, ChatRequest
+# stream_reply: generator that yields LLM tokens given history + analysis context
 from app.services.chat_service import stream_reply
+# get_logger: structured logging for chat/stream errors and persistence events
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

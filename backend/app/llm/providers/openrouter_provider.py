@@ -1,16 +1,32 @@
+"""
+Concrete LLM provider — talks to OpenRouter using the OpenAI-compatible HTTP client.
+
+What it does:
+- Owns the OpenAI() client singleton pointed at https://openrouter.ai/api/v1.
+- Implements model fallback chain (primary -> fallback -> 4 free models) with per-model 15s timeout.
+- Wraps Redis caching for deterministic (temp <= 0.15) prompts and a process-wide circuit breaker.
+- Exposes generate / generate_structured / stream for the LLMGateway facade.
+
+Upstream (who imports this): app/llm/gateway.py
+Downstream (what this imports): truststore, openai SDK, httpx, settings, logging
+"""
 from __future__ import annotations
 
-# Patch Python SSL to use native OS certificate store (macOS Keychain, etc.)
-# Makes SSL behave like curl — no cert issues on pyenv/Mac
+# truststore: routes Python's SSL through the OS cert store — fixes pyenv/macOS cert errors when calling OpenRouter
+# Wrapped in try/except so missing truststore (e.g. on Linux) just falls back to certifi defaults.
 try:
     import truststore
     truststore.inject_into_ssl()
 except ImportError:
     pass
 
+# OpenAI: HTTP client; OpenRouter speaks the OpenAI Chat Completions schema. RateLimitError/APIStatusError: typed errors we branch on for fallback
 from openai import OpenAI, RateLimitError, APIStatusError
+# httpx: lets us inject a custom Client with verify=False (Zscaler proxy) and a hard 15s timeout per model attempt
 import httpx
+# get_settings: pulls OPENROUTER_API_KEY, model names, temperatures from env / .env
 from app.core.settings import get_settings
+# get_logger: log which fallback model served the call and which models failed
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

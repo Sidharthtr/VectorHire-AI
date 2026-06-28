@@ -1,25 +1,31 @@
 """
-Evaluation routes — RAG quality metrics endpoint.
+Evaluation routes — score RAG quality (Ragas + DeepEval).
 
-POST /api/v1/evaluate
-  Run Ragas + DeepEval on a query/context/response triple.
-  Returns faithfulness, context_precision, context_recall, hallucination_score.
+What it does:
+- POST /evaluate          — given a query, retrieved context, response, and
+  optional ground truth, compute faithfulness / context_precision /
+  context_recall / hallucination_score
+- GET  /evaluate/history  — last N evaluation rows from the DB
 
-GET /api/v1/evaluate/history
-  Return past evaluation results stored in the database.
-
-Use cases:
-  - Monitor RAG quality as you add more jobs to ChromaDB
-  - Catch prompt regressions when you change LLM prompts
-  - Demonstrate evaluation framework to interviewers / senior engineers
+Upstream (who imports this): main.py mounts router under /api/v1 -> public
+paths /api/v1/evaluate and /api/v1/evaluate/history. Used by ops dashboards
+and regression checks (catches prompt drift as the corpus grows).
+Downstream (what this imports): evaluation.evaluation_service does the
+heavy metric work (with LLM-based fallback); lazy db imports inside /history
+keep startup cheap.
 """
 from __future__ import annotations
 
+# APIRouter: group /evaluate/* routes; HTTPException: bubble 500s with detail on failure
 from fastapi import APIRouter, HTTPException
+# BaseModel+Field: declare request/response schemas with descriptions for OpenAPI/Swagger
 from pydantic import BaseModel, Field
+# Optional: ground_truth and search_id are nullable on the request
 from typing import Optional
 
+# get_evaluation_service: singleton accessor for the Ragas/DeepEval-backed evaluator
 from app.evaluation.evaluation_service import get_evaluation_service
+# get_logger: structured logging for evaluation failures
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

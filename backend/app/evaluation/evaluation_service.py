@@ -1,22 +1,28 @@
 """
-Evaluation service — orchestrates Ragas + DeepEval into one call.
+Top-level RAG evaluation service combining Ragas + DeepEval into one call.
 
-Runs both evaluators in parallel (ThreadPoolExecutor) and merges results
-into a single EvaluationResult. Also persists results to the database.
+What it does:
+- Runs Ragas (faithfulness/precision/recall) and DeepEval (hallucination) concurrently
+- Merges metrics into EvaluationResult and persists a row to the evaluations table
+- Exposes get_evaluation_service() factory for FastAPI dependency injection
 
-Usage:
-    service = EvaluationService()
-    result = service.evaluate(query, contexts, response)
-    # result.faithfulness, result.context_precision, result.hallucination_score ...
+Upstream (who imports this): app/api/routes/evaluation_routes.py
+Downstream (what this imports): concurrent.futures, app.evaluation.{ragas_evaluator,deepeval_evaluator}, app.db.{session,models}, app.core.logging
 """
 from __future__ import annotations
 
+# ThreadPoolExecutor/as_completed: run Ragas + DeepEval in parallel to cut wall time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+# dataclass/asdict: typed EvaluationResult container with easy dict export for JSON responses
 from dataclasses import dataclass, asdict
+# Optional: ground_truth and search_id are nullable arguments
 from typing import Optional
 
+# evaluate_with_ragas / RagasMetrics: faithfulness + precision + recall scorer
 from app.evaluation.ragas_evaluator import evaluate_with_ragas, RagasMetrics
+# evaluate_hallucination / DeepEvalMetrics: hallucination scorer (lower is better)
 from app.evaluation.deepeval_evaluator import evaluate_hallucination, DeepEvalMetrics
+# get_logger: warn on evaluator failures and DB persistence errors
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

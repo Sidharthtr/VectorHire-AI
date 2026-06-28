@@ -1,7 +1,23 @@
 "use client";
+/**
+ * Provides the sidebar's list of past resume analyses for the logged-in user.
+ *
+ * What it does:
+ * - Fetches /analysis/history whenever the auth user changes
+ * - Tracks loading/error state and exposes a `refresh()` so pages can re-fetch after an analysis
+ * - Empties the list when there is no signed-in user
+ *
+ * Upstream (who imports this): app/(app)/layout.tsx (mounts HistoryProvider),
+ *   app/(app)/upload/page.tsx (calls refresh after analysis), components/layout/Sidebar.tsx
+ * Downstream (what this imports): react, @/lib/api, ./AuthContext, @/types
+ */
+// React context + hooks used to build the provider and memoise the refresh callback
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+// api — calls GET /analysis/history to populate the sidebar
 import { api } from "@/lib/api";
+// useAuth — only fetch history when a user is signed in; clear it on logout
 import { useAuth } from "./AuthContext";
+// AnalysisSummary — row shape rendered by the sidebar history list
 import type { AnalysisSummary } from "@/types";
 
 type HistoryState = {

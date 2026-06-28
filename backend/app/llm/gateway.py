@@ -1,4 +1,17 @@
+"""
+Single facade over the LLM provider — the rest of the app never imports a provider directly.
+
+What it does:
+- Exposes complete() / complete_structured() / stream_chat() so callers stay provider-agnostic.
+- Swap the underlying provider here (today OpenRouter) without touching chains or services.
+- Aliased as 'gemini_provider' for historical reasons — the actual backend is OpenRouter.
+
+Upstream (who imports this): app/llm/chains.py, app/services/chat_service.py, app/services/explanation_service.py (indirectly via chains)
+Downstream (what this imports): app.llm.providers.openrouter_provider, logging
+"""
+# openrouter_provider: the concrete LLM backend; aliased for legacy code that still calls it gemini_provider
 from app.llm.providers import openrouter_provider as gemini_provider
+# get_logger: log prompt sizes so we can spot prompts that risk hitting token limits
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

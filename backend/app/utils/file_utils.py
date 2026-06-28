@@ -1,7 +1,23 @@
+"""
+Filesystem helpers for resume upload handling.
+
+What it does:
+- validate_pdf(): enforce extension allowlist and max file size
+- save_upload(): write uploaded bytes to disk under a uuid-prefixed filename
+- list_files / ensure_dir: lightweight directory utilities used by debug routes
+
+Upstream (who imports this): app/api/dependencies.py, app/api/routes/debug_routes.py (per core/constants header)
+Downstream (what this imports): os, uuid, pathlib, typing, app.core.constants
+"""
+# os: kept for path-related side use even though pathlib drives most ops here
 import os
+# uuid: prefix uploaded filenames to avoid collisions between users
 import uuid
+# Path: type-safe filesystem operations for read/write/glob
 from pathlib import Path
+# Optional: validate_pdf returns an (ok, error_message?) tuple
 from typing import Optional
+# MAX_FILE_SIZE_MB / ALLOWED_EXTENSIONS: shared upload policy constants
 from app.core.constants import MAX_FILE_SIZE_MB, ALLOWED_EXTENSIONS
 
 

@@ -1,24 +1,20 @@
 """
-DeepEval-based hallucination detection.
+Hallucination scorer for LLM responses with a graceful LLM-only fallback.
 
-DeepEval (https://docs.confident-ai.com) specialises in catching when an LLM
-makes up facts that aren't in the source context — hallucination.
+What it does:
+- evaluate_hallucination(): returns DeepEvalMetrics.hallucination_score in [0, 1] (lower is better)
+- Uses real deepeval library if installed, otherwise falls back to an LLM judge prompt
+- Mirrors ragas_evaluator.py's fallback pattern so the app runs without optional deps
 
-HallucinationMetric score:
-  0.0 = no hallucination (good)
-  1.0 = severe hallucination (bad)
-  This is INVERTED from faithfulness — lower is better.
-
-Same graceful-fallback pattern as ragas_evaluator.py:
-  - Real DeepEval if installed.
-  - LLM-based approximation otherwise.
-
-Install properly with: pip install deepeval
+Upstream (who imports this): app/evaluation/evaluation_service.py
+Downstream (what this imports): dataclasses, app.core.logging; (lazy) deepeval, app.llm.gateway, app.utils.json_utils
 """
 from __future__ import annotations
 
+# dataclass: typed return container for hallucination_score
 from dataclasses import dataclass
 
+# get_logger: log fallback transitions and scoring failures
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,21 +1,24 @@
 """
-Arbeitnow job board adapter.
+Arbeitnow API adapter — fetches free tech/remote jobs (no auth required).
 
-Arbeitnow (https://www.arbeitnow.com) provides a completely FREE public API
-with no authentication required. It focuses on tech jobs and remote positions —
-perfect for our use case.
+What it does:
+- Implements BaseIngestor for Arbeitnow's public job board API
+- Client-side keyword filtering (API has weak server-side search) and maps responses to RawJob
+- Adapter step in the data flow: adapter (this file, fetch raw) -> normalizer -> embedder -> pipeline
 
-API docs: https://arbeitnow.com/api
-Endpoint: GET https://www.arbeitnow.com/api/job-board-api
-
-No env vars needed — this adapter is always available.
+Upstream (who imports this): app/ingestion/job_pipeline.py (lazy import inside _get_ingestors)
+Downstream (what this imports): httpx, app.ingestion.base_ingestor, app.ingestion.job_normalizer, app.core.logging
 """
 from __future__ import annotations
 
+# httpx: sync HTTP client used to call Arbeitnow's public REST endpoint
 import httpx
 
+# BaseIngestor: parent interface this adapter implements
 from app.ingestion.base_ingestor import BaseIngestor
+# RawJob: intermediate dict shape the normalizer expects from every adapter
 from app.ingestion.job_normalizer import RawJob
+# get_logger: log fetch counts and API errors
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

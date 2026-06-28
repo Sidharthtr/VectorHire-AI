@@ -1,9 +1,26 @@
 "use client";
+/**
+ * "New Analysis" page — drives the resume → AI pipeline → results flow.
+ *
+ * What it does:
+ * - Holds the chosen File and optional search-focus text in local state
+ * - Delegates the upload + LangGraph pipeline call to the useAnalysis hook
+ * - Swaps the UI between idle/uploading/analyzing/error/done states
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: /upload (default landing for signed-in users)
+ * Downstream (what this imports): upload + results components, useAnalysis hook, useHistory context
+ */
+// useState — tracks the selected File and the optional free-text "search focus" query
 import { useState } from "react";
+// ResumeUpload — drag-and-drop PDF picker that calls onFileSelect when a file is chosen
 import ResumeUpload from "@/components/upload/ResumeUpload";
+// UploadProgress — visual stepper showing uploading → analyzing → done/error
 import UploadProgress from "@/components/upload/UploadProgress";
+// AnalysisResults — summary cards + job matches + skill roadmap shown after the pipeline finishes
 import AnalysisResults from "@/components/results/AnalysisResults";
+// useAnalysis — owns the POST /analyze call, status state machine, and parsed result
 import { useAnalysis } from "@/hooks/useAnalysis";
+// useHistory — gives us refresh() so the Sidebar list re-fetches after a new analysis is saved
 import { useHistory } from "@/contexts/HistoryContext";
 
 export default function UploadPage() {

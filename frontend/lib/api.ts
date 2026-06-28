@@ -1,4 +1,19 @@
+/**
+ * Typed fetch client for the FastAPI backend.
+ *
+ * What it does:
+ * - Centralises every HTTP call (auth, resume upload/analyze, job search, history, streaming chat)
+ * - Attaches the JWT bearer token from localStorage and surfaces backend error details
+ * - Exposes a streaming chat helper that decodes the response body chunk-by-chunk
+ *
+ * Upstream (who imports this): contexts/AuthContext.tsx, contexts/HistoryContext.tsx,
+ *   hooks/useAnalysis.ts, hooks/useJobSearch.ts, app/(app)/analysis/[id]/page.tsx,
+ *   components/chat/ChatPanel.tsx
+ * Downstream (what this imports): ./auth-storage for the JWT, @/types for response shapes
+ */
+// getToken — read the JWT from localStorage so every request can attach Authorization
 import { getToken } from "./auth-storage";
+// Response/request shapes shared with the FastAPI backend Pydantic schemas
 import type {
   AnalysisResponse,
   AnalysisSummary,

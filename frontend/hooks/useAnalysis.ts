@@ -1,6 +1,20 @@
 "use client";
+/**
+ * Hook that runs a resume analysis and tracks its lifecycle status.
+ *
+ * What it does:
+ * - Drives the status state machine: idle → uploading → analyzing → done/error
+ * - Calls api.analyzeResume with the chosen file and optional search query
+ * - Fires an optional onSuccess callback (used to refresh the sidebar history)
+ *
+ * Upstream (who imports this): app/(app)/upload/page.tsx (the analyze UI)
+ * Downstream (what this imports): react useState, @/lib/api, @/types
+ */
+// useState — local state for status / result / error
 import { useState } from "react";
+// api — calls POST /resume/analyze
 import { api } from "@/lib/api";
+// AnalysisResponse — shape of the analyze endpoint's payload
 import type { AnalysisResponse } from "@/types";
 
 type Status = "idle" | "uploading" | "analyzing" | "done" | "error";

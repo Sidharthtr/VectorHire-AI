@@ -1,6 +1,20 @@
 "use client";
+/**
+ * Renders a full AnalysisResponse — summary cards, AI summary, gaps, suggestions, jobs.
+ *
+ * What it does:
+ * - Shows three summary tiles (matched-job count, best match %, skills-to-learn count)
+ * - Renders the LLM career summary, top missing skills, and a numbered improvement roadmap
+ * - Delegates the ranked-jobs list to JobList
+ *
+ * Upstream (who imports this OR which URL renders it): app/(app)/upload/page.tsx, app/(app)/analysis/[id]/page.tsx
+ * Downstream (what this imports): @/components/jobs/JobList, lucide-react icons, @/types AnalysisResponse
+ */
+// JobList — handles rendering the ranked job array via JobCards
 import JobList from "@/components/jobs/JobList";
+// lucide-react icons — Zap/TrendingUp/Target tile icons + Lightbulb for the AI summary header
 import { Lightbulb, Target, TrendingUp, Zap } from "lucide-react";
+// AnalysisResponse — typed shape of the pipeline output (top_jobs, summary, suggestions, missing skills)
 import type { AnalysisResponse } from "@/types";
 
 export default function AnalysisResults({ result }: { result: AnalysisResponse }) {

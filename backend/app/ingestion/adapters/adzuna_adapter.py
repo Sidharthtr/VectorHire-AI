@@ -1,25 +1,26 @@
 """
-Adzuna job board adapter.
+Adzuna API adapter — fetches raw job listings from the Adzuna REST API.
 
-Adzuna has a free tier API with 250 requests/day.
-Register at: https://developer.adzuna.com
+What it does:
+- Implements BaseIngestor for the Adzuna source (250 req/day free tier, requires ADZUNA_APP_ID/API_KEY)
+- Maps Adzuna result dicts into RawJob payloads ready for the normalizer
+- Adapter step in the data flow: adapter (this file, fetch raw) -> normalizer -> embedder -> pipeline
 
-Required env vars (set in backend/app/.env):
-    ADZUNA_APP_ID=your_app_id
-    ADZUNA_API_KEY=your_api_key
-
-If credentials are missing, is_available() returns False and the
-pipeline skips this source gracefully.
-
-API docs: https://api.adzuna.com/v1/api/jobs/{country}/search/1
+Upstream (who imports this): app/ingestion/job_pipeline.py (lazy import inside _get_ingestors)
+Downstream (what this imports): httpx, app.ingestion.base_ingestor, app.ingestion.job_normalizer, app.core.settings, app.core.logging
 """
 from __future__ import annotations
 
+# httpx: sync HTTP client used to call Adzuna's REST search endpoint
 import httpx
 
+# BaseIngestor: parent interface this adapter implements
 from app.ingestion.base_ingestor import BaseIngestor
+# RawJob: intermediate dict shape we emit so the normalizer can consume it
 from app.ingestion.job_normalizer import RawJob
+# get_settings: pulls Adzuna credentials from env-backed Settings
 from app.core.settings import get_settings
+# get_logger: log fetch counts and API failures
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,26 +1,35 @@
 """
-ChromaDB client — supports two modes controlled by USE_CHROMADB_SERVER:
+ChromaDB connection layer — the single chokepoint to the vector store.
 
-  False (default, local dev):
-      PersistentClient — embedded, stores data in app/data/chroma/
-      No Docker needed. Good for development.
+What it does:
+- Lazy-creates a Chroma client (embedded PersistentClient locally, HttpClient in Docker).
+- Exposes get_jobs_collection / get_resumes_collection plus upsert / query helpers.
+- Sits underneath every retriever: dense search, BM25 corpus loading, and cleanup
+  all read or write through these collection handles.
 
-  True (Docker / production):
-      HttpClient — connects to a separate ChromaDB container.
-      Allows multiple backend workers to share the same vector store.
-      Set CHROMADB_HOST and CHROMADB_PORT accordingly.
+Modes (toggled by settings.use_chromadb_server):
+  False -> PersistentClient writing to app/data/chroma/ (local dev, no Docker)
+  True  -> HttpClient pointed at a Chroma container (multi-worker / production)
 
-The rest of the app never imports chromadb directly — everything goes
-through get_chroma_client(), get_jobs_collection(), etc.
+Upstream (who imports this): app/rag/dense_retriever.py, app/rag/sparse_retriever.py,
+    app/rag/retriever.py, app/rag/cleanup.py, app/services/ingestion_service.py,
+    app/ingestion/job_embedder.py, app/api/routes/{ingestion,health}_routes.py
+Downstream (what this imports): chromadb, app.core.constants, app.core.settings
 """
 from __future__ import annotations
 
+# chromadb: the vector DB Python client (Persistent + Http variants live here)
 import chromadb
+# ChromaSettings: aliased to disable telemetry on both client variants
 from chromadb.config import Settings as ChromaSettings
+# Path: ensures the local persistence directory exists before PersistentClient opens it
 from pathlib import Path
+# Optional: type hint for the where-filter parameter in query_collection
 from typing import Optional
 
+# CHROMA_DIR + collection name constants — keeps storage paths/names in one config file
 from app.core.constants import CHROMA_DIR, CHROMA_COLLECTION_JOBS, CHROMA_COLLECTION_RESUMES
+# get_logger: structured logging for connection + upsert/delete operations
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

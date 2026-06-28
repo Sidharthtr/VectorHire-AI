@@ -1,22 +1,21 @@
 """
-Health check endpoint — reports status of all services.
-Used by Docker HEALTHCHECK and monitoring tools.
+Health check endpoint — reports liveness of every backing service.
 
-GET /api/v1/health
-Response:
-  {
-    "status": "ok" | "degraded",
-    "version": "0.1.0",
-    "services": {
-      "chromadb":        true,
-      "database":        true,
-      "redis":           true,   // false if REDIS_URL not set
-      "embedding_model": true,
-      "llm_configured":  true
-    }
-  }
+What it does:
+- GET /health — probes ChromaDB, the SQL database, Redis, the embedding lib,
+  and whether the LLM key is configured, then returns "ok" or "degraded"
+- Treats Redis as optional (its failure does not flip the overall status)
+- Used by Docker HEALTHCHECK and external monitoring tools
+
+Upstream (who imports this): main.py mounts router under settings.api_prefix
+(/api/v1), so the final path is GET /api/v1/health.
+Downstream (what this imports): core.settings for version/keys; lazy imports
+inside the handler keep startup fast and avoid hard failures if a sub-service
+is unavailable (rag.vectordb, db.session, core.redis_client, sentence_transformers).
 """
+# APIRouter: groups the /health endpoint so main.py can mount it under /api/v1
 from fastapi import APIRouter
+# get_settings: pulls app_version and openrouter_api_key for the response payload
 from app.core.settings import get_settings
 
 router = APIRouter(prefix="/health", tags=["Health"])

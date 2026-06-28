@@ -1,9 +1,26 @@
 "use client";
+/**
+ * Detail view for a saved analysis — reopen past results plus chat about them.
+ *
+ * What it does:
+ * - Reads :id from the dynamic route and fetches the analysis from the backend
+ * - Renders the same AnalysisResults panel used on /upload, but for stored data
+ * - Mounts ChatPanel so the user can ask the Career Coach follow-up questions
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: /analysis/[id] (linked from Sidebar history)
+ * Downstream (what this imports): @/lib/api, AnalysisResults, ChatPanel, AnalysisResponse type
+ */
+// useEffect — fetch when :id changes; useState — store result/error/loading flags
 import { useEffect, useState } from "react";
+// useParams — read the [id] dynamic segment from the URL on the client
 import { useParams } from "next/navigation";
+// api — wraps GET /analyses/:id (used here as api.getAnalysis)
 import { api } from "@/lib/api";
+// AnalysisResults — reuse the same results UI as /upload to render the saved analysis
 import AnalysisResults from "@/components/results/AnalysisResults";
+// ChatPanel — streaming Q&A about THIS analysis, scoped via analysisId prop
 import ChatPanel from "@/components/chat/ChatPanel";
+// AnalysisResponse type — shape of the fetched analysis (top_jobs, summary, suggestions, etc.)
 import type { AnalysisResponse } from "@/types";
 
 export default function AnalysisDetailPage() {

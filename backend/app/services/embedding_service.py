@@ -1,4 +1,17 @@
+"""
+Thin service wrapper over the low-level embedding functions.
+
+What it does:
+- Adds resume- and query-shaped helpers (embed_resume, embed_job_query) that join skills into the input string.
+- Keeps the rest of the app from importing app.rag directly so the embedding backend can be swapped here.
+- Stateless; all caching happens inside app.rag.embeddings.
+
+Upstream (who imports this): app/api/routes/analysis_routes.py (and any caller wanting embeddings via the service layer)
+Downstream (what this imports): app.rag.embeddings (embed_text, embed_batch), logging
+"""
+# embed_text / embed_batch: single- and batched-call entry points into the SentenceTransformer backend
 from app.rag.embeddings import embed_text, embed_batch
+# get_logger: kept for parity with other services; embedding errors propagate from the rag layer
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

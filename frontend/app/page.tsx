@@ -1,8 +1,24 @@
 "use client";
+/**
+ * Public marketing landing page — the first thing anonymous visitors see.
+ *
+ * What it does:
+ * - Renders hero, feature grid, and a "how it works" diagram
+ * - If the user is already signed in, redirects to /upload via useEffect
+ * - Links to /login and /register for unauthenticated visitors
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: / (root)
+ * Downstream (what this imports): next/link, next/navigation, lucide-react icons, @/contexts/AuthContext
+ */
+// useEffect — runs the post-login redirect effect when auth state resolves
 import { useEffect } from "react";
+// Link — client-side navigation to /login and /register without full reloads
 import Link from "next/link";
+// useRouter — programmatic redirect to /upload when an authenticated user lands here
 import { useRouter } from "next/navigation";
+// lucide-react icons — used in the logo (Brain), hero CTA (ArrowRight), and the 4 feature cards
 import { ArrowRight, Brain, Search, TrendingUp, Zap } from "lucide-react";
+// useAuth — reads { user, ready } to decide whether to redirect away from the landing page
 import { useAuth } from "@/contexts/AuthContext";
 
 const features = [

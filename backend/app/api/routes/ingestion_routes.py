@@ -1,23 +1,31 @@
 """
-Job ingestion routes — trigger real job data ingestion from external APIs.
+Admin/dev ingestion routes — refresh the vector DB from external job APIs.
 
-POST /api/v1/ingest
-  Fetch jobs from Adzuna/Arbeitnow, embed, and store in ChromaDB.
-  Returns an IngestionResult summary.
+What it does:
+- POST /ingest        — call run_ingestion() to fetch from Adzuna/Arbeitnow,
+  normalise, dedupe, embed, and upsert into ChromaDB; returns counts
+- GET  /admin/stats   — aggregate stats from the Postgres job registry plus
+  the live ChromaDB collection count
 
-GET /api/v1/admin/stats
-  Return aggregate stats from the PostgreSQL job registry.
-
-This endpoint is for admin/developer use.
-In production this would be a scheduled background task (cron every 6 hours).
+Upstream (who imports this): main.py mounts router under /api/v1 -> public
+paths /api/v1/ingest and /api/v1/admin/stats. Meant for manual/admin use;
+in production this would be a scheduled job (e.g. cron every 6h).
+Downstream (what this imports): ingestion.job_pipeline does all heavy
+lifting; lazy imports inside /admin/stats reach db.job_repository and
+rag.vectordb so a missing dep doesn't crash unrelated routes.
 """
 from __future__ import annotations
 
+# APIRouter: route group; BackgroundTasks: imported in case a future async ingestion variant offloads work
 from fastapi import APIRouter, BackgroundTasks
+# BaseModel+Field: declare the request/response shapes with validation + OpenAPI docs
 from pydantic import BaseModel, Field
+# Optional: typing hook for nullable fields (kept available even if not used yet)
 from typing import Optional
 
+# run_ingestion: orchestrates fetch->normalise->dedupe->embed->store; IngestionResult: typed summary it returns
 from app.ingestion.job_pipeline import run_ingestion, IngestionResult
+# get_logger: structured logging for ingestion triggers and errors
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,25 +1,35 @@
 """
-Hybrid retriever — orchestrates dense + sparse + RRF fusion.
+Hybrid retriever — top-level orchestrator that runs dense + sparse and fuses them.
 
-This is the main entry point for retrieval in Phase 2+.
-Retrieval mode is controlled by settings.retrieval_mode:
-  "dense"  → ChromaDB cosine similarity only (Phase 1 behaviour)
-  "sparse" → BM25 keyword search only
-  "hybrid" → Dense + Sparse + RRF fusion (default, best results)
+What it does:
+- Dispatches to dense_retrieve, sparse_retrieve, or both based on `mode`, then
+  applies Reciprocal Rank Fusion to merge the two ranked lists into one.
+- This is THE entry point for retrieval — LangGraph nodes and the /debug endpoint
+  both go through hybrid_retrieve() / retrieve_for_pipeline() here.
 
-Returns HybridResult which carries per-system scores for transparency
-and for the /debug/retrieval comparison endpoint.
+Upstream (who imports this): app/services/retrieval_service.py,
+    app/api/routes/debug_routes.py
+Downstream (what this imports): app.rag.dense_retriever, app.rag.sparse_retriever,
+    app.rag.rrf, app.schemas.job_schema, app.core.settings
 """
 from __future__ import annotations
 
+# dataclass / field: lightweight typed containers for RetrievedJob and HybridResult
 from dataclasses import dataclass, field
+# Optional: type hint for the optional filter arguments below
 from typing import Optional
 
+# dense_retrieve: runs cosine-similarity search over ChromaDB embeddings
 from app.rag.dense_retriever import dense_retrieve
+# sparse_retrieve: BM25 keyword scoring over the same job corpus
 from app.rag.sparse_retriever import sparse_retrieve
+# reciprocal_rank_fusion: merges dense + sparse ranked lists into one unified score
 from app.rag.rrf import reciprocal_rank_fusion
+# JobDocument: typed payload carried inside every RetrievedJob
 from app.schemas.job_schema import JobDocument
+# DEFAULT_TOP_K: shared result-size default across all retrievers
 from app.core.constants import DEFAULT_TOP_K
+# get_logger: logs counts and mode per query for observability
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

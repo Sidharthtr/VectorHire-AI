@@ -1,32 +1,33 @@
 """
-Job ingestion pipeline — orchestrates fetch → normalise → deduplicate → embed → store.
+Orchestrates the ingestion pipeline: fetch -> normalise -> dedup -> embed -> persist.
 
-Flow per run:
-  0. TTL cleanup — delete ChromaDB jobs older than 30 days
-  1. Fetch from all available ingestors
-  2. Normalise raw jobs → JobDocuments
-  3. ID-dedup — drop exact MD5(title|company|source) duplicates within the batch
-  4. Near-dup dedup — rapidfuzz title+company similarity > 95% within same source
-  5. PG registry check — load existing source_job_id → description_hash map
-       • same hash → skip re-embed (just touch last_seen_at in PG)
-       • changed hash → re-embed in ChromaDB + update PG
-       • new job → embed in ChromaDB + insert PG
-  6. Embed + store new/updated jobs in ChromaDB
-  7. Upsert all jobs to PG registry
-  8. Reset BM25 sparse index
-  9. Invalidate Redis search cache
+What it does:
+- TTL cleanup, multi-source fetch, ID + near-dup filtering, PG hash diff, ChromaDB embed, cache bust
+- Returns an IngestionResult summary with per-stage counts and source/error lists
+- Pipeline orchestrator in the data flow: adapter (fetch) -> normalizer -> embedder -> pipeline (this file)
+
+Upstream (who imports this): app/api/routes/ingestion_routes.py
+Downstream (what this imports): rapidfuzz, app.ingestion.{base_ingestor,job_normalizer,job_embedder,adapters.*}, app.schemas.job_schema, app.db.{session,job_repository}, app.rag.cleanup, app.core.{logging,redis_client}
 """
 from __future__ import annotations
 
+# dataclass/field: lightweight container for IngestionResult run statistics
 from dataclasses import dataclass, field
+# Optional: caller-supplied ingestor override is nullable
 from typing import Optional
 
+# fuzz: rapidfuzz token_sort_ratio for near-duplicate title+company detection
 from rapidfuzz import fuzz
 
+# BaseIngestor: typed interface for the registered source adapters
 from app.ingestion.base_ingestor import BaseIngestor
+# normalise: convert RawJob payloads into validated JobDocuments
 from app.ingestion.job_normalizer import normalise
+# embed_and_store_jobs: batch embed + ChromaDB upsert helper
 from app.ingestion.job_embedder import embed_and_store_jobs
+# JobDocument: canonical job record passed through the pipeline
 from app.schemas.job_schema import JobDocument
+# get_logger: per-stage progress and error logging
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

@@ -1,6 +1,20 @@
 "use client";
+/**
+ * Drag-and-drop PDF picker — surfaces a chosen resume File to its parent.
+ *
+ * What it does:
+ * - Supports click-to-browse and drag/drop, rejecting non-PDF files with an alert
+ * - Tracks the selected file locally for preview (name + KB size) and clear button
+ * - Calls onFileSelect(file) so the parent page owns the actual File object
+ *
+ * Upstream (who imports this OR which URL renders it): app/(app)/upload/page.tsx
+ * Downstream (what this imports): lucide-react icons, @/lib/utils cn (class merge helper)
+ */
+// useRef — access the hidden <input type="file">; useState — drag-highlight + selected file preview
 import { useRef, useState } from "react";
+// Upload/FileText/X icons — drop hint, selected-file badge, and the "Remove file" button
 import { Upload, FileText, X } from "lucide-react";
+// cn — conditional Tailwind classnames helper used for drag/selected/disabled states
 import { cn } from "@/lib/utils";
 
 interface ResumeUploadProps {

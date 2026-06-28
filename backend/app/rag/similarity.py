@@ -1,4 +1,22 @@
+"""
+Vector similarity utilities — cosine math + score-to-percentage helpers.
+
+What it does:
+- cosine_similarity(): the dot-product-over-norms classic, used when we have raw
+  vectors in hand (e.g. comparing a resume embedding to a candidate list in memory).
+- rank_by_similarity(): score + sort a list of {embedding: [...]} dicts.
+- similarity_to_percentage(): UI-facing helper that maps cosine [-1, 1] -> 0..100
+  for "X% match" displays.
+- Sits OUTSIDE the Chroma path — Chroma computes cosine internally; this module
+  is for in-app comparisons and for formatting scores for the API response.
+
+Upstream (who imports this): app/services/ranking_service.py,
+    app/api/routes/search_routes.py
+Downstream (what this imports): numpy
+"""
+# numpy: vector arithmetic (dot product, L2 norm) for cosine similarity
 import numpy as np
+# Optional: type hint for the optional top_k parameter in rank_by_similarity
 from typing import Optional
 
 

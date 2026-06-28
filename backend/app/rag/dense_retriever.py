@@ -1,12 +1,27 @@
 """
-Dense (semantic) retriever — wrapper around ChromaDB cosine similarity search.
+Dense (semantic) retriever — vector-space half of the hybrid RAG pipeline.
+
+What it does:
+- Embeds the user query, runs a cosine-similarity search against the jobs collection,
+  applies optional metadata filters, dedupes by job_id, and returns ranked JobDocuments.
+- Sits between vectordb (raw Chroma) and hybrid_retriever (which fuses dense+sparse).
+
+Upstream (who imports this): app/rag/hybrid_retriever.py
+Downstream (what this imports): app.rag.vectordb (Chroma access), app.rag.embeddings
+    (query vectorization), app.schemas.job_schema, app.core.constants
 """
 from __future__ import annotations
+# vectordb helpers: jobs collection handle + thin query wrapper around Chroma
 from app.rag.vectordb import get_jobs_collection, query_collection
+# embed_text: turns the query string into the dense vector we search with
 from app.rag.embeddings import embed_text
+# JobDocument: the Pydantic shape we hydrate each Chroma hit into before returning
 from app.schemas.job_schema import JobDocument
+# DEFAULT_TOP_K + SIMILARITY_THRESHOLD: tunables for result size and min score
 from app.core.constants import DEFAULT_TOP_K, SIMILARITY_THRESHOLD
+# get_logger: structured debug logging of result counts per query
 from app.core.logging import get_logger
+# Optional: type hint for the optional experience_level filter argument
 from typing import Optional
 
 logger = get_logger(__name__)

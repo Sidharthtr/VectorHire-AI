@@ -1,6 +1,21 @@
+"""
+Heuristic resume field extractor (regex + keyword matching, no LLM).
+
+What it does:
+- KNOWN_SKILLS keyword list + regex match to surface skills from raw resume text
+- extract_name / estimate_experience_level: simple line- and keyword-based guesses
+- basic_extract(): assembles a ParsedResume; used as a fallback when LLM extraction fails
+
+Upstream (who imports this): app/services/resume_service.py, app/graph/nodes/extract_skills_node.py
+Downstream (what this imports): re, app.schemas.resume_schema, app.utils.text_utils, app.core.logging
+"""
+# re: word-boundary regex matching for KNOWN_SKILLS keyword detection
 import re
+# ParsedResume + nested models: typed output shape returned by basic_extract
 from app.schemas.resume_schema import ParsedResume, Education, WorkExperience, Project
+# email/phone regex + skill dedup helpers reused so this file stays focused on heuristics
 from app.utils.text_utils import extract_email, extract_phone, deduplicate_skills
+# get_logger: available for future debug traces (currently unused but kept consistent)
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

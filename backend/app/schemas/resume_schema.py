@@ -1,4 +1,19 @@
+"""
+Pydantic models for a parsed resume (the LLM's structured output target).
+
+What it does:
+- Defines Education, WorkExperience, Project sub-models with sane defaults.
+- ParsedResume is the canonical schema produced by the resume parser node.
+- Coerces LLM int/float values (graduation_year, gpa) into strings safely.
+
+Upstream (who imports this): app.resume.extractor, app.resume.parser (re-export),
+app.resume.schemas, app.graph.state (workflow state), app.graph.nodes.extract_skills_node,
+app.schemas.response_schema, app.services.resume_service, app.services.explanation_service.
+Downstream (what this imports): pydantic (BaseModel, Field, field_validator), typing.Optional.
+"""
+# BaseModel/Field/field_validator: declare typed schemas + custom coercion for LLM output quirks
 from pydantic import BaseModel, Field, field_validator
+# Optional: many resume fields can legitimately be missing (no phone, no GPA, etc.)
 from typing import Optional
 
 

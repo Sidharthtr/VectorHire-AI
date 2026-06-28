@@ -1,21 +1,27 @@
 """
-SQLAlchemy ORM models for VectorHire AI.
+SQLAlchemy ORM models — every relational table the app uses.
 
-Tables:
-- users: future auth layer (stub for now)
-- resumes: uploaded resume metadata + extracted text
-- resume_analysis: full pipeline output per resume
-- job_searches: search queries + results
-- evaluations: RAG quality metrics (faithfulness, precision, recall)
+What it does:
+- Defines User, Resume, ResumeAnalysis, ChatMessage, JobSearch, Evaluation, Job tables.
+- Sets up relationships (User→Resume, Resume→Analyses/Searches, JobSearch→Evaluations).
+- ChromaDB holds vectors; this module holds metadata + relational links between them.
 
-ChromaDB stores vectors. PostgreSQL/SQLite stores metadata + relationships.
-These two systems are complementary, not competing.
+Upstream (who imports this): app.db.init_db (table creation), app.db.job_repository,
+app.api.deps (User lookup), app.api.routes (analysis, debug, resume, auth, evaluation),
+app.evaluation.evaluation_service.
+Downstream (what this imports): uuid, datetime, sqlalchemy column types + Mapped,
+app.db.base.Base.
 """
 from __future__ import annotations
+# uuid: _new_id() generates 32-char hex primary keys for every row
 import uuid
+# datetime: default value for created_at / first_seen_at / last_seen_at columns
 from datetime import datetime
+# Column types: String/Text/Float/DateTime/ForeignKey/JSON/Boolean — every column type used in this file
 from sqlalchemy import String, Text, Float, DateTime, ForeignKey, JSON, Boolean
+# Mapped + mapped_column: SQLAlchemy 2.0 typed column syntax; relationship: links between tables
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+# Base: the single DeclarativeBase every model inherits from (shared metadata registry)
 from app.db.base import Base
 
 

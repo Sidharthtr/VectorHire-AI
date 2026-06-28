@@ -1,8 +1,25 @@
+"""
+Workflow step 2/5 — turn raw resume text into a structured ParsedResume.
+
+What it does:
+- Reads state keys: raw_text.
+- Writes state keys: parsed_resume, processing_steps (and errors on failure).
+- Calls the LLM extraction chain; falls back to heuristic regex extract if the LLM/JSON parse fails.
+
+Upstream (who imports this): app/graph/builder.py
+Downstream (what this imports): WorkflowState, ResumeService, basic_extract, run_skill_extraction_chain, resume schemas, logging
+"""
+# WorkflowState: typed access to raw_text in / parsed_resume out
 from app.graph.state import WorkflowState
+# ResumeService: imported for the singleton handle even though this node uses the chain directly (keeps DI symmetric)
 from app.services.resume_service import ResumeService
+# basic_extract: regex/heuristic fallback when the LLM extraction returns nothing usable
 from app.resume.extractor import basic_extract
+# run_skill_extraction_chain: builds the EXTRACT_SKILLS_PROMPT and parses the LLM's JSON reply
 from app.llm.chains import run_skill_extraction_chain
+# Pydantic models we hydrate from the LLM dict so the rest of the pipeline gets a typed object
 from app.schemas.resume_schema import ParsedResume, Education, WorkExperience, Project
+# get_logger: trace LLM successes/failures for this node
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

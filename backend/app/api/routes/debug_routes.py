@@ -1,25 +1,33 @@
 """
-Debug routes — for development and retrieval quality inspection.
+Debug routes — dev-time visibility into retrieval and the database.
 
-GET /api/v1/debug/retrieval?query=...
-  Returns side-by-side results from dense, sparse, and hybrid retrieval.
-  Use this to:
-    - Verify BM25 index is working
-    - Compare which retrieval method finds better results
-    - Tune SIMILARITY_THRESHOLD and top_k
+What it does:
+- GET /debug/retrieval — side-by-side dense vs sparse (BM25) vs hybrid (RRF)
+  results for a query; used to tune SIMILARITY_THRESHOLD and top_k
+- GET /debug/db        — quick row-count smoke test on the SQL database
 
-GET /api/v1/debug/db
-  Quick health check for the SQLite database.
+Upstream (who imports this): main.py mounts router under /api/v1 -> public
+paths /api/v1/debug/*. Intended for developers, not end users.
+Downstream (what this imports): services.retrieval_service to keep parity
+with prod search, rag.hybrid_retriever for the three-mode comparison,
+core.constants.DEFAULT_TOP_K for the default page size.
 """
 from __future__ import annotations
 
+# APIRouter: route group; Query: declare query-string params with validation + docs
 from fastapi import APIRouter, Query
+# BaseModel: declare the typed debug response payloads
 from pydantic import BaseModel
+# Optional: experience_level filter on the retrieval debug endpoint
 from typing import Optional
 
+# RetrievalService: instantiated once at import time so debug calls reuse the warmed index
 from app.services.retrieval_service import RetrievalService
+# hybrid_retrieve: lower-level retriever exposing dense/sparse/hybrid modes for side-by-side comparison
 from app.rag.hybrid_retriever import hybrid_retrieve
+# DEFAULT_TOP_K: shared default page size so debug matches production behavior
 from app.core.constants import DEFAULT_TOP_K
+# get_logger: structured logging (kept for future error paths)
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

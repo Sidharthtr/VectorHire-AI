@@ -1,3 +1,16 @@
+"""
+Centralised prompt templates for every LLM chain in the app.
+
+What it does:
+- Holds the 5 .format()-style prompt strings used across the pipeline.
+- Keeps prompts in one place so wording can be tuned without touching business logic.
+- JSON-producing prompts end with "Return ONLY valid JSON" to keep safe_parse_json happy.
+
+Upstream (who imports this): app/llm/chains.py
+Downstream (what this imports): nothing — pure string constants
+"""
+
+
 EXTRACT_SKILLS_PROMPT = """You are an expert resume analyzer. Extract structured information from the resume text below.
 
 Resume Text:

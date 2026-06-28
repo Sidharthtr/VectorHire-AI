@@ -1,4 +1,18 @@
+"""
+Text-cleanup and lightweight extraction helpers shared across the codebase.
+
+What it does:
+- clean_text(): collapse whitespace and strip non-ASCII (used by PDF parser)
+- extract_email / extract_phone: regex-based contact field extractors
+- normalize_skill / deduplicate_skills: canonicalise skill strings
+- truncate_text / split_into_sentences: misc text utilities
+
+Upstream (who imports this): app/resume/parser.py, app/resume/extractor.py
+Downstream (what this imports): re, typing
+"""
+# re: every helper here is regex-driven (whitespace, emails, phones, sentences)
 import re
+# Optional: extract_email / extract_phone return None when no match is found
 from typing import Optional
 
 

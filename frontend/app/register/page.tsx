@@ -1,8 +1,24 @@
 "use client";
+/**
+ * Account creation page — collects email/password and calls AuthContext register().
+ *
+ * What it does:
+ * - Renders the signup form; client-side validates password length >= 8
+ * - On success, replaces URL with /upload so the new user starts onboarding
+ * - Redirects to /upload immediately if the visitor is already signed in
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: /register (linked from /, /login)
+ * Downstream (what this imports): next/link, next/navigation, lucide-react Brain, @/contexts/AuthContext
+ */
+// useEffect — redirect when already-authed; useState — controlled inputs + submission/error state
 import { useEffect, useState } from "react";
+// Link — bottom-of-card link back to /login for existing users
 import Link from "next/link";
+// useRouter — router.replace("/upload") after successful registration
 import { useRouter } from "next/navigation";
+// Brain icon — small logo mark above the signup card
 import { Brain } from "lucide-react";
+// useAuth — provides register(email, password) and the user/ready flags for redirect logic
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {

@@ -1,22 +1,21 @@
 """
-Reciprocal Rank Fusion (RRF).
+Reciprocal Rank Fusion: combine BM25 + dense rankings into one ordered list.
 
-RRF is a simple, parameter-free technique for merging multiple ranked lists
-into one combined ranking. It was introduced by Cormack et al. (2009) and
-has become the default fusion strategy for hybrid retrieval systems.
+What it does:
+- Implements the Cormack et al. (2009) RRF formula: score = Σ 1/(k+rank_i), k=60.
+- Sits between the two retrievers and the orchestrator — hybrid_retriever calls
+  this AFTER dense_retrieve and sparse_retrieve to merge their rankings.
 
-Formula for each document:
-    rrf_score = Σ  1 / (k + rank_i)
-where k=60 (recommended by the original paper) and rank_i is the 1-indexed
-rank of the document in retrieval system i.
+Why RRF: parameter-free, works on ranks (not raw scores) so it doesn't care that
+dense scores are cosine [0,1] and BM25 scores are unbounded. Documents ranked high
+in both lists get the biggest boost.
 
-Key properties:
-- Documents that appear high in BOTH lists get a large boost.
-- Documents that only appear in one list are still included but ranked lower.
-- k=60 controls how much early ranks dominate — higher k = flatter curve.
+Upstream (who imports this): app/rag/hybrid_retriever.py
+Downstream (what this imports): app.schemas.job_schema (just for the JobDocument type)
 """
 from __future__ import annotations
 
+# JobDocument: typed payload threaded through the fused output tuples
 from app.schemas.job_schema import JobDocument
 
 # Recommended constant from the original RRF paper.

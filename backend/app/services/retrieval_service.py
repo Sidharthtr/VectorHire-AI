@@ -1,25 +1,33 @@
 """
-Retrieval service — facade over the hybrid retriever with Redis search caching.
+Facade over the hybrid retriever (semantic + BM25) with Redis search caching.
 
-Cache key: search:{hash(query + experience_level + top_k + mode)}
-TTL: 1 hour (REDIS_TTL_SEARCH)
+What it does:
+- Wraps hybrid_retrieve / retrieve_for_pipeline so the API and graph never call the raw RAG layer.
+- Caches search results in Redis keyed by (query, experience, top_k, remote, location, mode) for 1 hour.
+- Post-filters by location (ChromaDB lacks substring filters) by overfetching 3x then trimming.
+- Builds a resume-derived query string for the graph's retrieve_jobs node.
 
-Same query from two users within an hour → second user gets instant results
-from Redis, no ChromaDB or BM25 query needed.
-
-Cache is invalidated automatically by TTL expiry, and manually via
-cache_delete_pattern("search:*") after a new ingestion run.
+Upstream (who imports this): app/graph/nodes/retrieve_jobs_node.py, app/api/routes/search_routes.py, debug routes
+Downstream (what this imports): app.rag.hybrid_retriever, JobDocument, constants, redis_client, settings, logging
 """
 from __future__ import annotations
 
+# json: not used at runtime here but kept available for ad-hoc debug printing of cached payloads
 import json
+# Optional: experience_level / location are nullable filter inputs
 from typing import Optional
 
+# hybrid_retrieve: debug variant returning full HybridResult; retrieve_for_pipeline: production variant returning (job, score) tuples
 from app.rag.hybrid_retriever import hybrid_retrieve, retrieve_for_pipeline, HybridResult
+# JobDocument: typed shape we deserialize cached search hits into
 from app.schemas.job_schema import JobDocument
+# DEFAULT_TOP_K: page size default when caller doesn't specify
 from app.core.constants import DEFAULT_TOP_K
+# get_logger: log cache hits/misses + query previews for retrieval debugging
 from app.core.logging import get_logger
+# Redis primitives — cache_delete_pattern is used to invalidate all search:* keys after re-ingestion
 from app.core.redis_client import cache_get, cache_set, cache_delete_pattern, make_hash
+# get_settings: pull retrieval_mode (hybrid/semantic/keyword) and TTLs into the cache key
 from app.core.settings import get_settings
 
 _LOCATION_FETCH_MULTIPLIER = 3   # fetch this many times top_k then post-filter by location

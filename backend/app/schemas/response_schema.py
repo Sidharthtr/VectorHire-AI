@@ -1,6 +1,24 @@
+"""
+Pydantic response envelopes — the JSON shapes the FastAPI routes return.
+
+What it does:
+- HealthResponse / ErrorResponse: generic API plumbing payloads.
+- ResumeUploadResponse: wraps a ParsedResume + resume_id after PDF upload.
+- JobSearchResponse: list of RankedJobs returned by /search.
+- AnalysisResponse: full pipeline output (top jobs, missing skills, suggestions).
+
+Upstream (who imports this): app.api.routes.analysis_routes, app.api.routes.search_routes,
+app.api.routes.resume_routes (used as response_model on the route decorators).
+Downstream (what this imports): pydantic (BaseModel, Field), typing.Optional/Any,
+app.schemas.resume_schema.ParsedResume, app.schemas.job_schema.RankedJob.
+"""
+# BaseModel/Field: declare typed response envelopes; Field unused here but kept for future fields
 from pydantic import BaseModel, Field
+# Optional/Any: many response fields are nullable (parsed_resume, processing_time_ms, detail blob)
 from typing import Optional, Any
+# ParsedResume: nested inside ResumeUploadResponse so the client gets parse output immediately
 from app.schemas.resume_schema import ParsedResume
+# RankedJob: list element type for both JobSearchResponse.jobs and AnalysisResponse.top_jobs
 from app.schemas.job_schema import RankedJob
 
 

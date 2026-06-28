@@ -1,20 +1,36 @@
 """
-Authentication routes.
+Authentication routes — registration, login, and "who am I".
 
-POST /auth/register  — create account, return JWT
-POST /auth/login     — verify credentials, return JWT
-GET  /auth/me        — return current user profile
+What it does:
+- POST /auth/register — create an account (hashes password), return a JWT
+- POST /auth/login    — verify email+password, return a JWT
+- GET  /auth/me       — return the current authenticated user's profile
+
+Upstream (who imports this): main.py mounts router under /api/v1, so the
+public paths are /api/v1/auth/*. Frontend lib/api.ts hits these to obtain
+the bearer token it stores for subsequent calls.
+Downstream (what this imports): db.session.get_db + db.models.User for
+persistence, core.security for hashing/JWT, api.deps.get_current_user for
+the /me guard.
 """
 from __future__ import annotations
 
+# APIRouter: groups /auth/* routes; Depends: DI for DB + current user; HTTPException+status: typed 4xx errors
 from fastapi import APIRouter, Depends, HTTPException, status
+# BaseModel: declares request/response payload schemas with automatic validation
 from pydantic import BaseModel
+# Session: type hint for the SQLAlchemy session resolved via Depends(get_db)
 from sqlalchemy.orm import Session
 
+# get_db: request-scoped DB session used to query/insert User rows
 from app.db.session import get_db
+# User: ORM model written on /register and read on /login + /me
 from app.db.models import User
+# Password + JWT helpers: bcrypt hash/verify for storage, JWT mint on successful auth
 from app.core.security import hash_password, verify_password, create_access_token
+# get_current_user: protects /me by resolving the User from the Bearer token
 from app.api.deps import get_current_user
+# get_logger: structured logging for register/login events
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

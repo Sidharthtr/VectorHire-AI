@@ -1,8 +1,24 @@
 "use client";
+/**
+ * Sign-in page — collects email/password and calls the AuthContext login().
+ *
+ * What it does:
+ * - Renders the login form with local email/password/error/submitting state
+ * - On success, replaces the URL with /upload (no back-button to login)
+ * - If already signed in on mount, redirects straight to /upload
+ *
+ * Upstream (who imports this OR which URL renders it): Next.js — URL: /login (also linked from /, /register)
+ * Downstream (what this imports): next/link, next/navigation, lucide-react Brain, @/contexts/AuthContext
+ */
+// useEffect — auto-redirect if already authenticated; useState — local form/submission state
 import { useEffect, useState } from "react";
+// Link — "Create one" link to /register at the bottom of the card
 import Link from "next/link";
+// useRouter — router.replace("/upload") after a successful login
 import { useRouter } from "next/navigation";
+// Brain icon — small logo mark above the login card
 import { Brain } from "lucide-react";
+// useAuth — provides login(email, password) and the current user/ready flags
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {

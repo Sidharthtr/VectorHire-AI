@@ -1,26 +1,26 @@
 """
-Job normalizer — converts raw API responses into clean JobDocument objects.
+Maps heterogeneous adapter payloads (RawJob) to the canonical JobDocument schema.
 
-Different job APIs return wildly different field names and formats.
-This module defines a RawJob TypedDict (the common intermediate format)
-and a normalizer that converts it to our internal JobDocument schema.
+What it does:
+- Declares RawJob TypedDict, the common intermediate format every adapter produces
+- normalise(): cleans HTML, derives skills, builds a stable MD5 job id, validates required fields
+- Normalizer step in the data flow: adapter (fetch raw) -> normalizer (this file) -> embedder -> pipeline
 
-Flow:
-    Adzuna response dict
-         ↓
-    AdzunaAdapter.fetch_jobs() → RawJob  (adapter maps API fields → RawJob)
-         ↓
-    normalise(raw_job) → JobDocument     (normalizer cleans + validates)
-         ↓
-    JobEmbedder → ChromaDB + PostgreSQL
+Upstream (who imports this): app/ingestion/job_pipeline.py, base_ingestor.py, adapters/adzuna_adapter.py, adapters/arbeitnow_adapter.py
+Downstream (what this imports): hashlib/re (id + cleanup), app.schemas.job_schema (JobDocument), app.core.logging
 """
 from __future__ import annotations
 
+# hashlib: build a deterministic MD5 id from title|company|source for dedup keys
 import hashlib
+# re: strip HTML and run the skills keyword regex over descriptions
 import re
+# TypedDict: declare RawJob structure; Optional: nullable salary fields
 from typing import TypedDict, Optional
 
+# JobDocument: canonical job schema we output for ChromaDB + PG
 from app.schemas.job_schema import JobDocument
+# get_logger: structured logger for debug skips and pipeline tracing
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

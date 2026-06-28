@@ -1,24 +1,25 @@
 """
-Ranking service — converts retrieved jobs into scored, sorted RankedJob results.
+Convert retrieved (job, cosine_score) pairs into scored, sorted RankedJob objects.
 
-Phase 2 scoring formula (3-signal weighted):
-    overall = 0.5 * semantic_pct
-            + 0.3 * skill_overlap_pct
-            + 0.2 * keyword_match_pct
+What it does:
+- Computes 3 signals per job: semantic (0.5), skill overlap (0.3), keyword match (0.2).
+- Returns RankedJob with matched_skills, missing_skills, and a ScoreBreakdown so the UI can show why.
+- Pure Python — no LLM, no network — keeps ranking sub-millisecond.
 
-Weights rationale:
-  - Semantic (0.5): embedding similarity captures role/domain fit holistically.
-  - Skill overlap (0.3): explicit skill match is the recruiter's first filter.
-  - Keyword match (0.2): BM25-style term match catches literal skill names
-                          that embeddings sometimes group too broadly.
+Weights live in module-level constants so they can be tuned without touching code paths.
 
-No LLM calls here — pure Python math. Keeps ranking sub-millisecond.
+Upstream (who imports this): app/graph/nodes/rank_jobs_node.py
+Downstream (what this imports): re, job schemas (JobDocument/RankedJob/ScoreBreakdown), similarity_to_percentage, logging
 """
 from __future__ import annotations
 
+# re: tokenize job description text for the BM25-style keyword signal
 import re
+# Schemas — JobDocument: input; RankedJob: output; ScoreBreakdown: per-signal scores attached to RankedJob for the UI
 from app.schemas.job_schema import JobDocument, RankedJob, ScoreBreakdown
+# similarity_to_percentage: converts raw cosine similarity (e.g. 0.42) into a 0-100 % the UI can show
 from app.rag.similarity import similarity_to_percentage
+# get_logger: trace ranking edge cases; minimal logging since this path is hot
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

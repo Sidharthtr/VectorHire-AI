@@ -1,5 +1,19 @@
+"""
+JSON read/write helpers plus a tolerant LLM-output parser.
+
+What it does:
+- load_json / save_json: simple UTF-8 file IO with parent dir auto-create
+- safe_parse_json(): strip markdown code fences before json.loads so messy LLM output still parses
+- Returns (parsed, error_message) so callers can degrade gracefully on malformed JSON
+
+Upstream (who imports this): app/llm/chains.py, app/evaluation/{ragas_evaluator,deepeval_evaluator}.py
+Downstream (what this imports): json, pathlib, typing
+"""
+# json: standard library encoder/decoder for both file IO and LLM-response parsing
 import json
+# Path: typed filesystem operations for load_json / save_json
 from pathlib import Path
+# Any: JSON shape isn't statically known; Optional: error string is nullable
 from typing import Any, Optional
 
 

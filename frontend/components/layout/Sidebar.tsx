@@ -1,8 +1,24 @@
 "use client";
+/**
+ * Persistent left sidebar — primary nav, prior-analyses list, and sign-out.
+ *
+ * What it does:
+ * - Renders "New Analysis" + "Job Search" nav links with active-route highlighting
+ * - Lists previous analyses from HistoryContext (each links to /analysis/[id])
+ * - Shows the signed-in user's email and a logout button at the bottom
+ *
+ * Upstream (who imports this OR which URL renders it): app/(app)/layout.tsx — appears on every authenticated page
+ * Downstream (what this imports): next/link, next/navigation, lucide-react icons, AuthContext, HistoryContext
+ */
+// Link — client-side navigation for nav items and history entries
 import Link from "next/link";
+// usePathname — read current URL to highlight the active nav link / history item
 import { usePathname } from "next/navigation";
+// lucide-react icons — logo (Brain), nav (Plus/Search), history rows (FileText/History), footer (LogOut)
 import { Brain, FileText, History, LogOut, Plus, Search } from "lucide-react";
+// useAuth — read the logged-in user's email and trigger logout from the footer button
 import { useAuth } from "@/contexts/AuthContext";
+// useHistory — supplies the cached analysis list and loading state for the history section
 import { useHistory } from "@/contexts/HistoryContext";
 
 function formatDate(iso: string): string {

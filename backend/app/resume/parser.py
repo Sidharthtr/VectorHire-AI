@@ -1,6 +1,21 @@
+"""
+PDF text extraction layer for uploaded resumes.
+
+What it does:
+- parse_pdf(): read a PDF from disk and return cleaned plain text
+- parse_pdf_bytes(): same, but for in-memory uploads (FastAPI UploadFile bytes)
+- Both delegate page-by-page extraction to PyMuPDF, then clean whitespace via text_utils
+
+Upstream (who imports this): app/services/resume_service.py, app/graph/nodes/parse_resume_node.py
+Downstream (what this imports): PyMuPDF (fitz), pathlib, app.utils.text_utils, app.core.logging
+"""
+# fitz (PyMuPDF): high-quality PDF text extraction engine
 import fitz  # PyMuPDF
+# Path: type-safe filesystem path handling for on-disk PDF reads
 from pathlib import Path
+# clean_text: collapse whitespace and strip non-ASCII before returning extracted text
 from app.utils.text_utils import clean_text
+# get_logger: record parse outcomes (character counts, filenames)
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

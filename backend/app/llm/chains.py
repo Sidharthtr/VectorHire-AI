@@ -1,4 +1,17 @@
+"""
+Reusable LLM "chains" — each function formats one prompt template and parses its reply.
+
+What it does:
+- Wraps the 5 prompt templates so callers pass typed args instead of f-strings.
+- Uses complete_structured() (temp=0.1) when JSON is expected, plain complete() for prose.
+- Safe-parses JSON replies and degrades gracefully (None / default list) on parse failure.
+
+Upstream (who imports this): app/graph/nodes/extract_skills_node.py, app/services/resume_service.py, app/services/explanation_service.py
+Downstream (what this imports): LLMGateway, prompt templates, safe_parse_json, logging
+"""
+# get_llm_gateway: provider-agnostic LLM facade; each chain calls .complete or .complete_structured
 from app.llm.gateway import get_llm_gateway
+# Prompt templates — each chain function below corresponds to exactly one of these
 from app.llm.prompts import (
     EXTRACT_SKILLS_PROMPT,
     RANK_JOBS_PROMPT,
@@ -6,8 +19,11 @@ from app.llm.prompts import (
     IMPROVEMENT_SUGGESTIONS_PROMPT,
     OVERALL_SUMMARY_PROMPT,
 )
+# safe_parse_json: tolerant JSON parser that strips markdown fences and returns (data, error)
 from app.utils.json_utils import safe_parse_json
+# get_logger: log parse failures so we can iterate on prompt wording when models drift
 from app.core.logging import get_logger
+# Optional: chains return None when JSON parsing fails so callers can decide to fall back
 from typing import Optional
 
 logger = get_logger(__name__)

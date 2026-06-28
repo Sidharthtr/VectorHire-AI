@@ -1,5 +1,19 @@
+"""
+Workflow step 5/5 — terminal node that produces user-facing explanations.
+
+What it does:
+- Reads state keys: ranked_jobs, parsed_resume.
+- Writes state keys: explained_jobs, overall_summary, top_missing_skills, improvement_suggestions, processing_steps (errors on failure).
+- Runs LLM calls in parallel for the top-N jobs via ExplanationService; degrades to a partial response on error.
+
+Upstream (who imports this): app/graph/builder.py
+Downstream (what this imports): WorkflowState, ExplanationService, logging
+"""
+# WorkflowState: typed access to ranked_jobs/parsed_resume in / explained_* out
 from app.graph.state import WorkflowState
+# ExplanationService: encapsulates the 4 explanation LLM chains plus a ThreadPoolExecutor for parallelism
 from app.services.explanation_service import ExplanationService
+# get_logger: log final step completion or partial-failure mode
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

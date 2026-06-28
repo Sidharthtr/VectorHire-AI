@@ -1,17 +1,23 @@
 """
-Chat service for follow-up questions on a saved ResumeAnalysis.
+Lightweight chat layer for follow-up questions on a saved ResumeAnalysis.
 
-Builds a career-coach prompt grounded in analysis_json (matched jobs,
-skill gaps, improvement roadmap) plus prior conversation turns, then
-streams tokens from the LLM gateway.
+What it does:
+- Builds a career-coach system prompt and embeds a compact summary of the user's analysis as grounding context.
+- Concatenates prior conversation turns + the new user message into the OpenAI-style message list.
+- Streams assistant tokens out via the LLM gateway's stream_chat (no caching — chat is non-deterministic).
+- Bypasses LangGraph entirely — this is just a conversation, not a multi-step workflow.
 
-No LangGraph — this is a lightweight conversation layer.
+Upstream (who imports this): app/api/routes/resume_routes.py (chat endpoints on saved analyses)
+Downstream (what this imports): typing, LLMGateway, logging
 """
 from __future__ import annotations
 
+# Iterable: stream_reply yields token strings; callers (FastAPI StreamingResponse) just need an iterable
 from typing import Iterable
 
+# get_llm_gateway: provider-agnostic LLM facade — stream_chat handles model fallback for streaming
 from app.llm.gateway import get_llm_gateway
+# get_logger: log prior-turn counts and total prompt length for token-budget debugging
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

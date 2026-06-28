@@ -1,9 +1,27 @@
+"""
+Bulk-ingest job postings from JSON into the ChromaDB vector store.
+
+What it does:
+- Loads a JSON file of raw job dicts, validates each into a JobDocument, and upserts to ChromaDB.
+- Chunks each job's full text and embeds every chunk in one batched call (much faster than per-chunk).
+- Attaches metadata (title, company, skills, experience_level...) so ChromaDB 'where' filters work at query time.
+
+Upstream (who imports this): app/api/routes/analysis_routes.py (and any CLI / admin script that triggers ingestion)
+Downstream (what this imports): json, pathlib, app.rag (vectordb, embeddings, chunking), JobDocument schema, logging
+"""
+# json: parse the input file of job postings
 import json
+# Path: typed file path argument; ingestion runs from a local jobs JSON file
 from pathlib import Path
+# get_jobs_collection: returns the ChromaDB collection handle; upsert_documents: idempotent insert/update by id
 from app.rag.vectordb import get_jobs_collection, upsert_documents
+# embed_batch: vectorise all chunks of a job in one SentenceTransformer call
 from app.rag.embeddings import embed_batch
+# chunk_document: splits long job text into overlapping windows so embeddings stay within model context
 from app.rag.chunking import chunk_document
+# JobDocument: Pydantic validation of raw JSON dicts before they hit the vector store
 from app.schemas.job_schema import JobDocument
+# get_logger: log per-job ingestion failures and final ingested/total tally
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)

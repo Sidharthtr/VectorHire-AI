@@ -1,20 +1,29 @@
 """
-JWT + bcrypt helpers.
+JWT + bcrypt helpers — the only place auth crypto lives.
 
-Usage:
-    token = create_access_token(subject=user.id)
-    user_id = decode_token(token)          # None if invalid/expired
-    hashed = hash_password("secret")
-    ok = verify_password("secret", hashed)
+What it does:
+- hash_password / verify_password wrap bcrypt for the User.password_hash column.
+- create_access_token issues a signed JWT with `sub` = user_id and an expiry.
+- decode_token validates a token and returns the user_id (or None on failure).
+
+Upstream (who imports this): app.api.deps (get_current_user dependency),
+app.api.routes.auth_routes (signup / login endpoints).
+Downstream (what this imports): python-jose (JWT encode/decode), passlib (bcrypt),
+datetime for expiry math, app.core.settings for secret + algorithm + TTL.
 """
 from __future__ import annotations
 
+# datetime/timedelta: compute the `exp` claim relative to utcnow()
 from datetime import datetime, timedelta
+# Optional: decode_token returns Optional[str] — None signals invalid/expired
 from typing import Optional
 
+# jose: JWT encode/decode; JWTError is the catch-all for bad signature / expired token
 from jose import JWTError, jwt
+# CryptContext: passlib helper that picks bcrypt and handles hash migration ("deprecated=auto")
 from passlib.context import CryptContext
 
+# get_settings: pulls jwt_secret_key / jwt_algorithm / jwt_expire_minutes from .env
 from app.core.settings import get_settings
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

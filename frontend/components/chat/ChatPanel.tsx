@@ -1,7 +1,22 @@
 "use client";
+/**
+ * Career-Coach chat panel — streaming Q&A scoped to one saved analysis.
+ *
+ * What it does:
+ * - On mount, loads prior messages for analysisId via api.getMessages
+ * - On send, appends an optimistic user message + a streaming assistant placeholder
+ * - Calls api.streamChat to feed token chunks into the assistant bubble; supports abort
+ *
+ * Upstream (who imports this OR which URL renders it): app/(app)/analysis/[id]/page.tsx
+ * Downstream (what this imports): @/lib/api, @/types ChatMessage, lucide-react icons
+ */
+// useEffect/useRef/useState — load history, autoscroll to bottom, hold abort controller, manage messages
 import { useEffect, useRef, useState } from "react";
+// lucide-react icons — Send button, Sparkles for assistant bubble + header, UserIcon for user bubble
 import { Send, Sparkles, User as UserIcon } from "lucide-react";
+// api — getMessages (load chat history) and streamChat (push user msg + stream assistant reply)
 import { api } from "@/lib/api";
+// ChatMessage — server-side message shape returned by GET /messages, mapped to LocalMessage
 import type { ChatMessage } from "@/types";
 
 type LocalMessage = {

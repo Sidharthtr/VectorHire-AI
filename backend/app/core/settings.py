@@ -1,6 +1,23 @@
+"""
+Pydantic Settings — central typed config loaded from .env / environment variables.
+
+What it does:
+- Defines every tunable knob (LLM model, DB URL, Redis URL, JWT secret, CORS, TTLs).
+- Reads .env automatically and exposes a single cached get_settings() accessor.
+- Provides defaults so the app boots even with a near-empty .env.
+
+Upstream (who imports this): app.core.config (re-export), app.db.session, app.core.security,
+app.core.redis_client, app.llm.providers.openrouter_provider, app.rag.vectordb,
+app.rag.hybrid_retriever, app.ingestion.adapters.adzuna_adapter, app.main,
+app.services.resume_service, app.services.retrieval_service, app.api.routes (debug/health).
+Downstream (what this imports): pydantic_settings.BaseSettings, functools.lru_cache, typing.Optional.
+"""
 from __future__ import annotations
+# BaseSettings: auto-loads env vars + .env file into a typed Pydantic model
 from pydantic_settings import BaseSettings
+# lru_cache: memoise get_settings() so .env is parsed once per process
 from functools import lru_cache
+# Optional: chroma_persist_directory is resolved later from constants, may be None
 from typing import Optional
 
 
